@@ -29,8 +29,3 @@ dx serve --platform desktop
 *   `libjavascriptcoregtk-4.1-dev`
 *   `libwebkit2gtk-4.1-dev`
 *   `libxdo-dev`
-
-Nom du repo : netcalc-rs
-Description : 🦀 IPv4 Subnet Calculator | CIDR Converter | Network Address Utility 
-               with CLI interface. Educational project for network engineers.
-Topics : rust, networking, ip-calculator, subnetting, cidr
