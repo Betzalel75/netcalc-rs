@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+	 viewBox="0 0 512 512" xml:space="preserve">
+<g>
+	<rect x="84.144" y="195.552" style="fill:#0BA4E0;" width="16" height="120.896"/>
+	<rect x="412.144" y="195.552" style="fill:#0BA4E0;" width="16" height="123.008"/>
+	<rect x="86.816" y="248" style="fill:#0BA4E0;" width="333.328" height="16"/>
+</g>
+<ellipse style="fill:#D6D6D6;" cx="91.856" cy="42.096" rx="41.648" ry="42.096"/>
+<path style="fill:#0BA4E0;" d="M163.792,169.312c0-40.144-32.208-72.688-71.936-72.688S19.92,129.168,19.92,169.312H163.792z"/>
+<ellipse style="fill:#D6D6D6;" cx="420.144" cy="42.096" rx="41.648" ry="42.096"/>
+<path style="fill:#0BA4E0;" d="M492.08,169.312c0-40.144-32.208-72.688-71.936-72.688s-71.936,32.544-71.936,72.688H492.08z"/>
+<g>
+	<circle style="fill:#D6D6D6;" cx="254.816" cy="256" r="42.24"/>
+	<ellipse style="fill:#D6D6D6;" cx="91.856" cy="384.8" rx="41.648" ry="42.096"/>
+</g>
+<path style="fill:#0BA4E0;" d="M163.792,512c0-40.144-32.208-72.688-71.936-72.688S19.92,471.856,19.92,512H163.792z"/>
+<ellipse style="fill:#D6D6D6;" cx="420.144" cy="384.8" rx="41.648" ry="42.096"/>
+<path style="fill:#0BA4E0;" d="M492.08,512c0-40.144-32.208-72.688-71.936-72.688s-71.92,32.544-71.92,72.688H492.08z"/>
+</svg>

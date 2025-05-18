@@ -1,0 +1,31 @@
+[package]
+name = "netcalc-rs"
+version = "0.1.0"
+authors = ["eibounda <elvisbetzalel@outlook.fr>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dark-light = "2.0.0"
+dioxus = { version = "0.6.0", features = [] }
+env_logger = "0.11.6"
+log = "0.4.26"
+
+[features]
+default = ["desktop"]
+web = ["dioxus/web"]
+desktop = ["dioxus/desktop"]
+mobile = ["dioxus/mobile"]
+
+[profile]
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+
+[profile.server-dev]
+inherits = "dev"
+
+[profile.android-dev]
+inherits = "dev"
