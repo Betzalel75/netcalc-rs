@@ -1,12 +1,14 @@
 use dioxus::prelude::*;
-use crate::{components::{broadcast::Broadcast, help::Help, home::Home, host_count::HostCount, ip_range::IpRange, sidebar::SidebarButton, subnet_mask::SubnetMask, subnet_split::SubnetSplit, Theme, View}, BROADCAST_SVG, DASHBOARD_SVG, FAVICON, HELP_SVG, HOTES_SVG, IPS_SVG, MAIN_CSS, MASK_SVG, SUBNET_SVG};
+use crate::components::switcher::Switcher;
+#[allow(unused_imports)]
+use crate::{components::{broadcast::Broadcast, help::Help, home::Home, host_count::HostCount, ip_range::IpRange, sidebar::SidebarButton, subnet_mask::SubnetMask, subnet_split::SubnetSplit, Theme, View}, BASE_CSS, BROADCAST_SVG, COMPONENT_CSS, DASHBOARD_SVG, FAVICON, HELP_SVG, HOTES_SVG, IPS_SVG, LAYOUT_CSS, MASK_SVG, SUBNET_SVG, VARIABLES_CSS};
 
 #[component]
 pub fn App() -> Element {
-    let mut current_view = use_signal(|| View::Home);
+    let mut current_view:Signal<View> = use_signal(|| View::Home);
     let mut theme = use_signal(|| Theme::System);
 
-    let theme_class = match *theme.read() {
+    let theme_class: &'static str = match *theme.read() {
         Theme::Light => "light",
         Theme::Dark => "dark",
         Theme::System => {
@@ -52,54 +54,32 @@ pub fn App() -> Element {
 
     rsx! {
             document::Link { rel: "icon", href: FAVICON }
-            document::Link { rel: "stylesheet", href: MAIN_CSS}
-            div { class: "{theme_class}",
+            document::Link { rel: "stylesheet", href: VARIABLES_CSS}
+            document::Link { rel: "stylesheet", href: LAYOUT_CSS}
+            document::Link { rel: "stylesheet", href: COMPONENT_CSS}
+            document::Link { rel: "stylesheet", href: BASE_CSS}
+            body {
+            div { class: "glass-container {theme_class}",
             div { class: "dashboard",
                 div { class: "sidebar",
                     div {
+                        class: "main-content",
                         h2 { "NetCalc-RS" }
                         SidebarButton {
+                            current: current_view.read().to_owned().to_string(),
+                            target: "home",
                             onclick: move |_| current_view.set(View::Home),
                             svg_path: DASHBOARD_SVG,
                             text: "Home",
                         }
                     },
-                    div { class: "theme-switcher",
-                        label {
-                            input {
-                                r#type: "radio",
-                                name: "theme",
-                                value: "system",
-                                checked: *theme.read() == Theme::System,
-                                onclick: move |_| theme.set(Theme::System),
-                            }
-                            "System"
-                        }
-                        label {
-                            input {
-                                r#type: "radio",
-                                name: "theme",
-                                value: "light",
-                                checked: *theme.read() == Theme::Light,
-                                onclick: move |_| theme.set(Theme::Light),
-                            }
-                            "Light"
-                        }
-                        label {
-                            input {
-                                r#type: "radio",
-                                name: "theme",
-                                value: "dark",
-                                checked: *theme.read() == Theme::Dark,
-                                onclick: move |_| theme.set(Theme::Dark),
-                            }
-                            "Dark"
-                        }
-                    }
+                    Switcher { theme: theme }
                     nav {
                         ul {
                             li {
                                 SidebarButton {
+                                    current: current_view.read().to_owned().to_string(),
+                                    target: "ip-range",
                                     onclick: move |_| current_view.set(View::IpRange),
                                     svg_path: IPS_SVG,
                                     text: "Plage d'IP",
@@ -107,6 +87,8 @@ pub fn App() -> Element {
                             }
                             li {
                                 SidebarButton {
+                                    current: current_view.read().to_owned().to_string(),
+                                    target: "subnet-mask",
                                     onclick: move |_| current_view.set(View::SubnetMask),
                                     svg_path: MASK_SVG,
                                     text: "Masque depuis nb IP",
@@ -114,6 +96,8 @@ pub fn App() -> Element {
                             }
                             li {
                                 SidebarButton {
+                                    current: current_view.read().to_owned().to_string(),
+                                    target: "broadcast",
                                     onclick: move |_| current_view.set(View::Broadcast),
                                     svg_path: BROADCAST_SVG,
                                     text: "Adresse de diffusion",
@@ -121,6 +105,8 @@ pub fn App() -> Element {
                             }
                             li {
                                 SidebarButton {
+                                    current: current_view.read().to_owned().to_string(),
+                                    target: "host-count",
                                     onclick: move |_| current_view.set(View::HostCount),
                                     svg_path: HOTES_SVG,
                                     text: "Hôtes",
@@ -128,6 +114,8 @@ pub fn App() -> Element {
                             }
                             li {
                                 SidebarButton {
+                                    current: current_view.read().to_owned().to_string(),
+                                    target: "subnet-split",
                                     onclick: move |_| current_view.set(View::SubnetSplit),
                                     svg_path: SUBNET_SVG,
                                     text: "Subdivision",
@@ -135,6 +123,8 @@ pub fn App() -> Element {
                             }
                             li {
                                 SidebarButton {
+                                    current: current_view.read().to_owned().to_string(),
+                                    target: "help",
                                     onclick: move |_| current_view.set(View::Help),
                                     svg_path: HELP_SVG,
                                     text: "Aide",
@@ -154,6 +144,7 @@ pub fn App() -> Element {
                         View::Help => rsx!(Help{}),
                     }
                 }
+            }
             }
             }
     }

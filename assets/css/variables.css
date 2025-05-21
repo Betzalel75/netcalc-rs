@@ -1,0 +1,53 @@
+:root {
+  /* Variables communes modernisées */
+  --font-family: 'Inter', 'Segoe UI', sans-serif; /* Inter est plus moderne */
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1); /* Animation plus dynamique */
+  --bg-blur: 16px; /* Réduit pour plus de performance */
+  --border-radius: 12px; /* Plus doux */
+  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.12); /* Ombre plus prononcée */
+  --text-glow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Effet de profondeur */
+
+  /* Light Theme - Inspiré iOS/MacOS moderne */
+  --light-bg: rgba(249, 250, 251, 0.85); /* Gris très léger */
+  --light-text: #111827; /* Gris anthracite */
+  --light-primary: #4361ee; /* Bleu vif mais non agressif */
+  --light-secondary: #3a0ca3; /* Bleu profond */
+  --light-accent: #f72585; /* Rose pour les accents */
+  --light-border: rgba(209, 213, 219, 0.5); /* Bordure subtile */
+  --light-card: rgba(255, 255, 255, 0.948); /* Fond des cartes */
+
+  /* Dark Theme - Inspiré OneDark/Figma Dark */
+  --dark-bg: rgba(17, 24, 39, 0.9); /* Bleu nuit profond */
+  --dark-text: #e5e7eb; /* Blanc cassé */
+  --dark-primary: #3a86ff; /* Bleu électrique */
+  --dark-secondary: #8338ec; /* Violet moderne */
+  --dark-accent: #ff006e; /* Rose fluo */
+  --dark-border: rgba(75, 85, 99, 0.4); /* Bordure bleu-gris */
+  --dark-card: rgb(27, 35, 47); /* Fond des cartes */
+}
+
+.light {
+  --bg-color: var(--light-bg);
+  --text-color: var(--light-text);
+  --primary-color: var(--light-primary);
+  --secondary-color: var(--light-secondary);
+  --accent-color: var(--light-accent);
+  --border-color: var(--light-border);
+  --card-bg: var(--light-card);
+  
+  /* Effets spécifiques au mode clair */
+  --text-glow: none;
+}
+
+.dark {
+  --bg-color: var(--dark-bg);
+  --text-color: var(--dark-text);
+  --primary-color: var(--dark-primary);
+  --secondary-color: var(--dark-secondary);
+  --accent-color: var(--dark-accent);
+  --border-color: var(--dark-border);
+  --card-bg: var(--dark-card);
+  
+  /* Effets spécifiques au mode sombre */
+  --text-glow: 0 0 8px rgba(12, 180, 246, 0.86);
+}

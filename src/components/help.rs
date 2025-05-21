@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::components::widget::WidgetsPage;
+
 
 #[component]
 pub fn Help() -> Element {
@@ -12,5 +14,6 @@ pub fn Help() -> Element {
             p { "Hôtes: Déterminer le nombre d'adresses d'hôtes disponibles sur un réseau" }
             p { "Subdivision: Découpe du sous-réseau" }
         }
+        WidgetsPage{}
     }
 }

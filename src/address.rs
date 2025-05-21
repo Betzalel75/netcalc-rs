@@ -1,4 +1,3 @@
-
 // address.rs
 
 pub struct NetAddress {
@@ -25,7 +24,6 @@ impl NetAddress {
         let derniere = adresse + nombre_ips - 2;
         (premiere, derniere)
     }
-    
 
     pub fn determiner_masque(nb_adresses_ip: u32) -> u32 {
         if nb_adresses_ip < 1 {
@@ -37,18 +35,18 @@ impl NetAddress {
 
     pub fn decouper_sous_reseau(&self, nouveau_masque: u32) -> Vec<NetAddress> {
         let nombre_sous_reseaux = self.calculer_nombre_adresses_reseaux(nouveau_masque);
-            let taille_sous_reseau = 2u32.pow(32 - nouveau_masque);
-            let mut sous_reseaux = Vec::new();
-        
-            // On aligne l'adresse sur le masque original
-            let adresse_base = self.address & (0xFFFFFFFFu32 << (32 - self.mask));
-        
-            for i in 0..nombre_sous_reseaux {
-                let adresse = adresse_base + i * taille_sous_reseau;
-                sous_reseaux.push(NetAddress::new(adresse, nouveau_masque));
-            }
-        
-            sous_reseaux
+        let taille_sous_reseau = 2u32.pow(32 - nouveau_masque);
+        let mut sous_reseaux = Vec::new();
+
+        // On aligne l'adresse sur le masque original
+        let adresse_base = self.address & (0xFFFFFFFFu32 << (32 - self.mask));
+
+        for i in 0..nombre_sous_reseaux {
+            let adresse = adresse_base + i * taille_sous_reseau;
+            sous_reseaux.push(NetAddress::new(adresse, nouveau_masque));
+        }
+
+        sous_reseaux
     }
 
     pub fn determiner_adresse_diffusion(&self) -> u32 {
@@ -63,6 +61,15 @@ impl NetAddress {
             return 2;
         }
         2u32.pow(32 - masque) - 2
+    }
+    pub fn to_binary_string(&self) -> String {
+        format!(
+            "{:08b}.{:08b}.{:08b}.{:08b}",
+            (self.address >> 24) & 255,
+            (self.address >> 16) & 255,
+            (self.address >> 8) & 255,
+            self.address & 255
+        )
     }
 }
 

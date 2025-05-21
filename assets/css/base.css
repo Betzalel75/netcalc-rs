@@ -1,0 +1,31 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--bg-color);
+  color: var(--text-color);
+  transition: background var(--transition), color var(--transition);
+  overflow-y: auto;
+}
+
+.text-glow {
+  text-shadow: var(--text-glow);
+}
+
+/* Exemples d'utilisation ciblée */
+h1, h2, h3 {
+  text-shadow: var(--text-glow); /* Pour les titres seulement */
+  color: var(--text-color);
+}
+p, b, pre{
+  color: var(--text-color);
+}
+
+.dashboard {
+  transition: all 0.3s ease;
+}

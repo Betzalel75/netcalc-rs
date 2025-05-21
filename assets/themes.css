@@ -1,0 +1,108 @@
+:root {
+  /* Variables communes */
+  --font-family: 'Segoe UI', sans-serif;
+  --transition: 0.3s ease;
+  --bg-blur: 20px;
+  --border-radius: 15px;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+  /* Couleurs principales */
+  --color-primary: #5D9CEC;       /* Bleu clair doux */
+  --color-accent: #C18CFA;        /* Lavande moderne */
+  --color-info: #5DE2E7;          /* Cyan clair */
+  --color-success: #7ED6A5;       /* Vert doux */
+  --color-warning: #FFD166;       /* Jaune pastel */
+  --color-danger: #FF6B6B;        /* Rouge/rose atténué */
+
+  /* Light Theme */
+  --light-bg: rgba(255, 255, 255, 0.45);
+  --light-text: #1e1e1e;
+  --light-primary: var(--color-primary);
+  --light-border: rgba(200, 200, 200, 0.5);
+  --light-surface: rgba(250, 250, 250, 0.6);
+
+  /* Dark Theme */
+  --dark-bg: rgba(18, 18, 18, 0.45);
+  --dark-text: #f1f1f1;
+  --dark-primary: var(--color-primary);
+  --dark-border: rgba(80, 80, 80, 0.4);
+  --dark-surface: rgba(30, 30, 30, 0.6);
+}
+
+
+/* 2- Palette Vibrante et Audacieuse*/
+:root {
+  /* Variables communes */
+  --font-family: 'Segoe UI', sans-serif;
+  --transition: 0.3s ease;
+  --bg-blur: 20px;
+  --border-radius: 15px;
+  --card-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+
+  /* Light Theme */
+  --light-bg: rgba(250, 250, 250, 0.7); /* Blanc cassé */
+  --light-text: #222;
+  --light-primary: #663399; /* Violet moderne */
+  --light-secondary: #ff6b6b; /* Corail vibrant */
+  --light-accent: #ffd700; /* Jaune vif pour l'accentuation */
+  --light-border: rgba(230, 230, 230, 0.5);
+
+  /* Dark Theme */
+  --dark-bg: rgba(35, 35, 35, 0.7); /* Gris foncé */
+  --dark-text: #f8f8f8;
+  --dark-primary: #9966cc; /* Violet plus clair */
+  --dark-secondary: #ff8a8a; /* Corail plus clair */
+  --dark-accent: #ffe066; /* Jaune plus clair */
+  --dark-border: rgba(60, 60, 60, 0.5);
+}
+/* 1- Palette Minimaliste et Épurée */
+:root {
+  /* Variables communes */
+  --font-family: 'Segoe UI', sans-serif;
+  --transition: 0.3s ease;
+  --bg-blur: 20px;
+  --border-radius: 15px;
+  --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.05); /* Ombre subtile */
+
+  /* Light Theme */
+  --light-bg: rgba(245, 245, 245, 0.8); /* Gris très clair */
+  --light-text: #333; /* Gris foncé */
+  --light-primary: #007bff; /* Bleu primaire classique et moderne */
+  --light-secondary: #6c757d; /* Gris secondaire pour les textes moins importants */
+  --light-accent: #28a745; /* Vert pour l'accentuation positive */
+  --light-border: rgba(220, 220, 220, 0.5); /* Bordure discrète */
+
+  /* Dark Theme */
+  --dark-bg: rgba(25, 25, 25, 0.8); /* Gris très foncé */
+  --dark-text: #eee; /* Gris très clair */
+  --dark-primary: #5bc0de; /* Bleu clair moderne */
+  --dark-secondary: #adb5bd; /* Gris secondaire plus clair */
+  --dark-accent: #a7d129; /* Vert plus vif pour l'accentuation positive */
+  --dark-border: rgba(50, 50, 50, 0.5); /* Bordure discrète */
+}
+
+/*  3- Palette Naturelle et Douce */
+:root {
+  /* Variables communes */
+  --font-family: 'Segoe UI', sans-serif;
+  --transition: 0.3s ease;
+  --bg-blur: 20px;
+  --border-radius: 15px;
+  --card-shadow: 0 5px 12px rgba(0, 0, 0, 0.06);
+
+  /* Light Theme */
+  --light-bg: rgba(252, 250, 245, 0.8); /* Beige clair */
+  --light-text: #4a4a4a; /* Gris moyen */
+  --light-primary: #5cb85c; /* Vert doux */
+  --light-secondary: #8fbc8f; /* Vert clair */
+  --light-accent: #f0ad4e; /* Orange chaud pour l'accentuation */
+  --light-border: rgba(235, 235, 235, 0.5);
+
+  /* Dark Theme */
+  --dark-bg: rgba(40, 45, 40, 0.8); /* Vert foncé */
+  --dark-text: #dcdcdc; /* Gris clair */
+  --dark-primary: #8fbc8f; /* Vert plus clair */
+  --dark-secondary: #a9d1a9; /* Vert très clair */
+  --dark-accent: #f4c172; /* Orange plus clair */
+  --dark-border: rgba(70, 75, 70, 0.5);
+}
