@@ -1,31 +1,27 @@
-# Development
 
-Your new bare-bones project includes minimal organization with a single `main.rs` file and a few assets.
+---
 
-```
-project/
-├─ assets/ # Any assets that are used by the app should be placed here
-├─ src/
-│  ├─ main.rs # main.rs is the entry point to your application and currently contains all components for the app
-├─ Cargo.toml # The Cargo.toml file defines the dependencies and feature flags for your project
-```
+# 🧮 netcalc-rs
 
-### Serving Your App
+![License: GPL v3](https://img.shields.io/badge/license-GPLv3-blue)
 
-Run the following command in the root of your project to start developing with the default platform:
+**netcalc-rs** is a graphical IP addressing calculator built with Rust and the Dioxus framework. It helps users understand and manipulate subnetting, masks, broadcast addresses, and more.
 
-```bash
-dx serve
-```
+**netcalc-rs** est une application de calcul d'adressage IP avec interface graphique, développée en Rust avec le framework Dioxus. Elle permet de comprendre et manipuler facilement les concepts de sous-réseaux, masques, adresses de diffusion, et plus encore.
 
-To run for a different platform, use the `--platform platform` flag. E.g.
-```bash
-dx serve --platform desktop
-```
-### Dépendances:
+---
 
-*   `libgtk-3-dev`
-*   `libsoup3-dev` (ou `libsoup-3.0-dev`, selon votre système)
-*   `libjavascriptcoregtk-4.1-dev`
-*   `libwebkit2gtk-4.1-dev`
-*   `libxdo-dev`
+## 🌐 Language / Langue
+
+For more details about the project, please read the README in your preferred language:
+
+Pour plus de détails sur le projet, veuillez lire le README dans votre langue préférée :
+
+*   [English / Anglais](README.en.md)
+*   [Français / French](README.fr.md)
+
+## Auteurs / Authors
+
+- 👤 **Betzalel75**: [Profile](https://github.com/Betzalel75)
+
+---

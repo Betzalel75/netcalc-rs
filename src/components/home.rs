@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+#[allow(non_snake_case)]
 
 #[component]
 pub fn Home() -> Element {
@@ -22,7 +23,7 @@ pub fn Home() -> Element {
                     onclick: move |_| show_modal.set(false), // Ferme si clic sur overlay
                     div {
                         class: "modal-content",
-                        onclick: |_| {}, // Empêche propagation
+                        onclick: move |evt| evt.stop_propagation(), // ⛔ bloque la propagation
                         h2 { "📘 Théorie : Concepts clés" }
                         ul {
                             li { strong { "IPv4 vs IPv6: " } "IPv4 utilise 32 bits (4.3 milliards d'adresses), IPv6 utilise 128 bits (3.4×10^38)."

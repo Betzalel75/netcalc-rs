@@ -3,6 +3,7 @@ use std::net::Ipv4Addr;
 use dioxus::prelude::*;
 
 use crate::{address::NetAddress, components::format_ipv4};
+#[allow(non_snake_case)]
 
 #[component]
 pub fn Broadcast() -> Element {
@@ -20,7 +21,7 @@ pub fn Broadcast() -> Element {
                     let ip_vec: Vec<u32> = ip_addr.octets().iter().map(|&b| b as u32).collect();
                     let ip_u32 = (ip_vec[0] << 24) | (ip_vec[1] << 16) | (ip_vec[2] << 8) | ip_vec[3];
                     let net = NetAddress::new(ip_u32, mask_val);
-                    let addr = net.determiner_adresse_diffusion();
+                    let addr = net.broadcast_address();
                     result.set(format_ipv4(addr));
                 } else {
                     result.set("Entrées invalides".to_string());

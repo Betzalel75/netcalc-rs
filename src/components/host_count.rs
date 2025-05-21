@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+#[allow(non_snake_case)]
 
 use crate::address::NetAddress;
 
@@ -13,7 +14,7 @@ pub fn HostCount() -> Element {
             input { class: "input-field", placeholder: "Masque", oninput: move |e| mask.set(e.value().clone()) }
             button { class: "action-button", onclick: move |_| {
                 if let Ok(mask_val) = mask.read().parse::<u32>() {
-                    let count = NetAddress::nombre_adresses_hotes(mask_val);
+                    let count = NetAddress::number_of_host_addresses(mask_val);
                     let val = if mask_val == 31 {
                         "2 (liaison point à point entre deux routeurs. \
                             Bien qu'il y ait deux adresses IP, elles ne sont pas considérées\

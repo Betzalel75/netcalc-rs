@@ -142,6 +142,7 @@
   max-width: 600px;
   box-shadow: var(--card-shadow);
   animation: fadeIn 0.3s ease-in-out;
+  overflow-x: hidden;
 }
 
 .modal-content ul {

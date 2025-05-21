@@ -1,0 +1,48 @@
+.
+├── arch
+├── assets
+│   ├── css
+│   │   ├── base.css
+│   │   ├── components.css
+│   │   ├── layout.css
+│   │   └── variables.css
+│   ├── favicon.ico
+│   ├── images
+│   │   ├── broadcast.svg
+│   │   ├── dashboard.svg
+│   │   ├── header.svg
+│   │   ├── help.svg
+│   │   ├── hotes.svg
+│   │   ├── ips.svg
+│   │   ├── mask.svg
+│   │   ├── netcalc-rs.png
+│   │   ├── person-reading-a-book-question-mark.svg
+│   │   └── subnet.svg
+│   ├── main.css
+│   ├── netcalc-rs.ico
+│   └── themes.css
+├── Cargo.lock
+├── Cargo.toml
+├── Dioxus.toml
+├── LICENSE
+├── README.en.md
+├── README.fr.md
+├── README.md
+├── src
+│   ├── address.rs
+│   ├── components
+│   │   ├── app.rs
+│   │   ├── broadcast.rs
+│   │   ├── help.rs
+│   │   ├── home.rs
+│   │   ├── host_count.rs
+│   │   ├── ip_range.rs
+│   │   ├── mod.rs
+│   │   ├── sidebar.rs
+│   │   ├── subnet_mask.rs
+│   │   ├── subnet_split.rs
+│   │   ├── switcher.rs
+│   │   └── widget.rs
+│   ├── lib.rs
+│   └── main.rs
+└── 

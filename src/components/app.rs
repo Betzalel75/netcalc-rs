@@ -2,11 +2,12 @@ use dioxus::prelude::*;
 use crate::components::switcher::Switcher;
 #[allow(unused_imports)]
 use crate::{components::{broadcast::Broadcast, help::Help, home::Home, host_count::HostCount, ip_range::IpRange, sidebar::SidebarButton, subnet_mask::SubnetMask, subnet_split::SubnetSplit, Theme, View}, BASE_CSS, BROADCAST_SVG, COMPONENT_CSS, DASHBOARD_SVG, FAVICON, HELP_SVG, HOTES_SVG, IPS_SVG, LAYOUT_CSS, MASK_SVG, SUBNET_SVG, VARIABLES_CSS};
+#[allow(non_snake_case)]
 
 #[component]
 pub fn App() -> Element {
     let mut current_view:Signal<View> = use_signal(|| View::Home);
-    let mut theme = use_signal(|| Theme::System);
+    let theme = use_signal(|| Theme::System);
 
     let theme_class: &'static str = match *theme.read() {
         Theme::Light => "light",
@@ -19,7 +20,7 @@ pub fn App() -> Element {
             }
         }
     };
-
+    /*
     use_effect(move || {
             // Detect initial theme
             theme.set(Theme::System);
@@ -51,6 +52,7 @@ pub fn App() -> Element {
                 std::mem::forget(callback);
             }
         });
+    */
 
     rsx! {
             document::Link { rel: "icon", href: FAVICON }

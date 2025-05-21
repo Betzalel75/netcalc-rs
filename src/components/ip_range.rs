@@ -1,4 +1,5 @@
 use std::net::Ipv4Addr;
+#[allow(non_snake_case)]
 
 use dioxus::prelude::*;
 
@@ -30,7 +31,7 @@ pub fn IpRange() -> Element {
                 onclick: move |_| {
                     if let (Ok(ip_addr), Ok(mask_val)) = (ip.read().parse::<Ipv4Addr>(), mask.read().parse::<u32>()) {
                         let ip_u32 = u32::from(ip_addr);
-                        let (first, last) = NetAddress::determiner_plage_ip(ip_u32, mask_val);
+                        let (first, last) = NetAddress::ip_range(ip_u32, mask_val);
                         let res = format!("Première IP: {} | Dernière IP: {}", format_ipv4(first), format_ipv4(last));
                         result.set(res);
                     } else {

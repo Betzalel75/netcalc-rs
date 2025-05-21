@@ -2,7 +2,7 @@ pub use dioxus::prelude::*;
 pub mod address;
 pub mod components;
 
-pub const FAVICON: Asset = asset!("/assets/favicon.ico");
+pub const FAVICON: Asset = asset!("/assets/netcalc-rs.ico");
 pub const VARIABLES_CSS: Asset = asset!("/assets/css/variables.css");
 pub const BASE_CSS: Asset = asset!("/assets/css/base.css");
 pub const LAYOUT_CSS: Asset = asset!("/assets/css/layout.css");
@@ -15,3 +15,4 @@ pub const IPS_SVG: Asset = asset!("/assets/images/ips.svg");
 pub const MASK_SVG: Asset = asset!("/assets/images/mask.svg");
 pub const SUBNET_SVG: Asset = asset!("/assets/images/subnet.svg");
 pub const HELP_SVG: Asset = asset!("/assets/images/help.svg");
+pub const HOW_SVG: Asset = asset!("/assets/images/person-reading-a-book-question-mark.svg");

@@ -29,6 +29,16 @@ pub enum Theme {
     System,
 }
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum Modal {
+    NetAddress,
+    FindIpsAddr,
+    BroadcastAddr,
+    Subnetting,
+    FindMask,
+}
+
+
 pub fn format_ipv4(ip: u32) -> String {
     format!("{}.{}.{}.{}",
         (ip >> 24) & 255,
@@ -58,6 +68,18 @@ impl Theme {
             Theme::Light => "light",
             Theme::Dark => "dark",
             Theme::System => "system",
+        }
+    }
+}
+
+impl Modal {
+    pub fn to_string(&self) -> &'static str {
+        match self {
+            Modal::NetAddress => "net-address",
+            Modal::FindIpsAddr => "find-ips-addr",
+            Modal::BroadcastAddr => "broadcast-addr",
+            Modal::Subnetting => "subnetting",
+            Modal::FindMask => "find-mask",
         }
     }
 }

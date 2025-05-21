@@ -1,4 +1,3 @@
-// address.rs
 
 pub struct NetAddress {
     pub address: u32,
@@ -10,11 +9,11 @@ impl NetAddress {
         Self { address, mask }
     }
 
-    pub fn calculer_nombre_adresses_reseaux(&self, nouveau_masque: u32) -> u32 {
+    fn calculate_number_of_network_addresses(&self, nouveau_masque: u32) -> u32 {
         2u32.pow((nouveau_masque - self.mask) as u32)
     }
 
-    pub fn determiner_plage_ip(adresse: u32, masque: u32) -> (u32, u32) {
+    pub fn ip_range(adresse: u32, masque: u32) -> (u32, u32) {
         let nombre_ips = 2u32.pow(32 - masque);
         let premiere = if nombre_ips <= 2 {
             adresse
@@ -25,7 +24,7 @@ impl NetAddress {
         (premiere, derniere)
     }
 
-    pub fn determiner_masque(nb_adresses_ip: u32) -> u32 {
+    pub fn calcmask(nb_adresses_ip: u32) -> u32 {
         if nb_adresses_ip < 1 {
             println!("Erreur valeur invalid!");
             return 0;
@@ -33,8 +32,8 @@ impl NetAddress {
         32 - (nb_adresses_ip as f32).log2().ceil() as u32
     }
 
-    pub fn decouper_sous_reseau(&self, nouveau_masque: u32) -> Vec<NetAddress> {
-        let nombre_sous_reseaux = self.calculer_nombre_adresses_reseaux(nouveau_masque);
+    pub fn subnet_split(&self, nouveau_masque: u32) -> Vec<NetAddress> {
+        let nombre_sous_reseaux = self.calculate_number_of_network_addresses(nouveau_masque);
         let taille_sous_reseau = 2u32.pow(32 - nouveau_masque);
         let mut sous_reseaux = Vec::new();
 
@@ -49,12 +48,12 @@ impl NetAddress {
         sous_reseaux
     }
 
-    pub fn determiner_adresse_diffusion(&self) -> u32 {
+    pub fn broadcast_address(&self) -> u32 {
         self.address | ((1u32 << (32 - self.mask)) - 1)
     }
 
-    pub fn nombre_adresses_hotes(masque: u32) -> u32 {
-        if masque >= 32 {
+    pub fn number_of_host_addresses(masque: u32) -> u32 {
+        if masque >= 32 || masque <= 0 {
             return 0;
         }
         if masque == 31 {
@@ -75,14 +74,28 @@ impl NetAddress {
 
 impl std::fmt::Display for NetAddress {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "{}.{}.{}.{}/{}",
-            (self.address >> 24) & 255,
-            (self.address >> 16) & 255,
-            (self.address >> 8) & 255,
-            self.address & 255,
-            self.mask
-        )
+        if f.alternate() {
+            // {:?}
+            write!(
+                f,
+                "{}.{}.{}.{}/{}\n<=>{}",
+                (self.address >> 24) & 255,
+                (self.address >> 16) & 255,
+                (self.address >> 8) & 255,
+                self.address & 255,
+                self.mask,
+                self.to_binary_string()
+            )
+        } else {
+            write!(
+                f,
+                "{}.{}.{}.{}/{}",
+                (self.address >> 24) & 255,
+                (self.address >> 16) & 255,
+                (self.address >> 8) & 255,
+                self.address & 255,
+                self.mask
+            )
+        }
     }
 }

@@ -1,16 +1,82 @@
-use crate::address::NetAddress;
+use crate::{address::NetAddress, components::{sidebar::SidebarButton, Modal}, HOW_SVG};
 use dioxus::prelude::*;
 use std::net::Ipv4Addr;
+#[allow(non_snake_case)]
 
 #[component]
 pub fn WidgetsPage() -> Element {
+    let mut current_widget:Signal<Modal> = use_signal(|| Modal::NetAddress);
+    let mut show_modal = use_signal(|| false);
+    
     rsx! {
-        div { class: "tool-container",
-            CalculatorNetAddress {}
-            FindIpsAddr {}
-            FindBroadcastAddr {}
-            Subnetting {}
-            FindMask {}
+        div { class: "tool-container",    
+            div{
+                SidebarButton {
+                    current: current_widget.read().to_owned().to_string(),
+                    target: "net-address",
+                    onclick: move |_| {current_widget.set(Modal::NetAddress); show_modal.set(true)},
+                    svg_path: HOW_SVG,
+                    text: "Comment déterminer l'adresse réseau",
+                }
+            }
+            div{
+                SidebarButton {
+                    current: current_widget.read().to_owned().to_string(),
+                    target: "find-ips-addr",
+                    onclick: move |_| {current_widget.set(Modal::FindIpsAddr); show_modal.set(true)},
+                    svg_path: HOW_SVG,
+                    text: "Comment déterminer les adresses utilisables",
+                }
+            }
+            div{
+                SidebarButton {
+                    current: current_widget.read().to_owned().to_string(),
+                    target: "broadcast-addr",
+                    onclick: move |_| {current_widget.set(Modal::BroadcastAddr); show_modal.set(true)},
+                    svg_path: HOW_SVG,
+                    text: "Comment calculer l'adresse de Diffusion",
+                }
+            }
+            div{
+                SidebarButton {
+                    current: current_widget.read().to_owned().to_string(),
+                    target: "subnetting",
+                    onclick: move |_| {current_widget.set(Modal::Subnetting); show_modal.set(true)},
+                    svg_path: HOW_SVG,
+                    text: "Comment Découper un réseau",
+                }
+            }
+            div{
+                SidebarButton {
+                    current: current_widget.read().to_owned().to_string(),
+                    target: "find-mask",
+                    onclick: move |_| {current_widget.set(Modal::FindMask); show_modal.set(true)},
+                    svg_path: HOW_SVG,
+                    text: "Comment calculer le Masque",
+                }
+            }
+        }
+        if *show_modal.read() {
+        div {
+            class: "modal-overlay",
+            onclick: move |_| show_modal.set(false), // Ferme si clic sur overlay
+            div {
+                class: "modal-content",
+                onclick: move |evt| evt.stop_propagation(), // ⛔ bloque la propagation
+                match current_widget.read().to_owned() {
+                    Modal::FindMask => rsx!(FindMask{}),
+                    Modal::NetAddress => rsx!(CalculatorNetAddress{}),
+                    Modal::FindIpsAddr => rsx!(FindIpsAddr{}),
+                    Modal::BroadcastAddr => rsx!(FindBroadcastAddr{}),
+                    Modal::Subnetting => rsx!(Subnetting{}),
+                }
+                button {
+                    class: "action-button",
+                    onclick: move |_| show_modal.set(false),
+                    "Fermer"
+                }
+            }
+        }
         }
     }
 }
@@ -84,7 +150,6 @@ pub fn CalculatorNetAddress() -> Element {
                     BitLine { label: "IP".to_string(), bits: binary_ip.read().clone(), color: "cyan".to_string() }
                     BitLine { label: "Masque".to_string(), bits: binary_mask.read().clone(), color: "orange".to_string() }
                     BitLine { label: "Résultat".to_string(), bits: binary_network.read().clone(), color: "limegreen".to_string() }
-
                 }
             }
 
@@ -120,7 +185,9 @@ pub fn FindIpsAddr() -> Element {
     let mut ip = use_signal(String::new);
     let mut mask = use_signal(String::new);
     let mut result = use_signal(String::new);
-    let mut binary_info = use_signal(String::new);
+    let mut binary_first_ip = use_signal(String::new);
+    let mut binary_last_ip = use_signal(String::new);
+    let mut binary_mask = use_signal(String::new);
 
     rsx! {
         div { class: "tool-container",
@@ -151,7 +218,7 @@ pub fn FindIpsAddr() -> Element {
                         let ip_octets: Vec<u32> = ip_val.octets().iter().map(|b| *b as u32).collect();
                         let ip_u32 = (ip_octets[0] << 24) | (ip_octets[1] << 16) | (ip_octets[2] << 8) | ip_octets[3];
 
-                        let (first, last) = NetAddress::determiner_plage_ip(ip_u32, mask_val);
+                        let (first, last) = NetAddress::ip_range(ip_u32, mask_val);
 
                         result.set(format!(
                             "Première IP utilisable : {}\nDernière IP utilisable : {}",
@@ -159,15 +226,15 @@ pub fn FindIpsAddr() -> Element {
                             crate::components::format_ipv4(last),
                         ));
 
-                        binary_info.set(format!(
-                            "{}\n{}\n{}",
-                            format!("Première : {:032b}", first),
-                            format!("Dernière : {:032b}", last),
-                            format!("Masque   : {:032b}", 0xFFFFFFFFu32 << (32 - mask_val))
-                        ));
+                        binary_first_ip.set(format!("{:032b}", first));
+                        binary_last_ip.set(format!("{:032b}", last));
+                        binary_mask.set(format!("{:032b}", 0xFFFFFFFFu32 << (32 - mask_val)));
+
                     } else {
                         result.set("Entrées invalides".to_string());
-                        binary_info.set("".to_string());
+                        binary_first_ip.set("".to_string());
+                        binary_last_ip.set("".to_string());
+                        binary_mask.set("".to_string());
                     }
                 },
                 "Calculer"
@@ -175,10 +242,15 @@ pub fn FindIpsAddr() -> Element {
 
             p { class: "result", "{result.read()}" }
 
-            if !binary_info.read().is_empty() {
-                pre {
-                    style: "background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; font-family: monospace;",
-                    "{binary_info.read()}"
+            div {
+                style: "margin-top: 1rem;",
+                p { "🧠 Représentation binaire (avec couleurs) :" }
+
+                div {
+                    style: "font-family: monospace; white-space: pre-wrap;",
+                    BitLine { label: "Première IP".to_string(), bits: binary_first_ip.read().clone(), color: "cyan".to_string() }
+                    BitLine { label: "Dernière IP".to_string(), bits: binary_last_ip.read().clone(), color: "orange".to_string() }
+                    BitLine { label: "Masque".to_string(), bits: binary_mask.read().clone(), color: "limegreen".to_string() }
                 }
             }
         }
@@ -191,7 +263,9 @@ pub fn FindBroadcastAddr() -> Element {
     let mut ip = use_signal(String::new);
     let mut mask = use_signal(String::new);
     let mut result = use_signal(String::new);
-    let mut binary_output = use_signal(String::new);
+    let mut binary_ip = use_signal(String::new);
+    let mut binary_mask = use_signal(String::new);
+    let mut binary_broadcast = use_signal(String::new);
 
     rsx! {
         div { class: "tool-container",
@@ -220,19 +294,18 @@ pub fn FindBroadcastAddr() -> Element {
                         mask.read().parse::<u32>()
                     ) {
                         let ip_u32 = u32::from(ip_val);
-                        let broadcast = NetAddress::new(ip_u32, mask_val).determiner_adresse_diffusion();
+                        let broadcast = NetAddress::new(ip_u32, mask_val).broadcast_address();
 
                         result.set(format!("Adresse de diffusion : {}", crate::components::format_ipv4(broadcast)));
 
-                        binary_output.set(format!(
-                            "IP        : {:032b}\nMasque    : {:032b}\nDiffusion : {:032b}",
-                            ip_u32,
-                            0xFFFFFFFFu32 << (32 - mask_val),
-                            broadcast
-                        ));
+                        binary_ip.set(format!("{:032b}", ip_u32));
+                        binary_mask.set(format!("{:032b}", 0xFFFFFFFFu32 << (32 - mask_val)));
+                        binary_broadcast.set(format!("{:032b}", broadcast));
                     } else {
                         result.set("Entrées invalides".to_string());
-                        binary_output.set("".to_string());
+                        binary_ip.set("".to_string());
+                        binary_mask.set("".to_string());
+                        binary_broadcast.set("".to_string());
                     }
                 },
                 "Calculer"
@@ -240,10 +313,15 @@ pub fn FindBroadcastAddr() -> Element {
 
             p { class: "result", "{result.read()}" }
 
-            if !binary_output.read().is_empty() {
-                pre {
-                    style: "background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; font-family: monospace;",
-                    "{binary_output.read()}"
+             div {
+                style: "margin-top: 1rem;",
+                p { "🧠 Représentation binaire (avec couleurs) :" }
+
+                div {
+                    style: "font-family: monospace; white-space: pre-wrap;",
+                    BitLine { label: "IP".to_string(), bits: binary_ip.read().clone(), color: "cyan".to_string() }
+                    BitLine { label: "Masque".to_string(), bits: binary_mask.read().clone(), color: "orange".to_string() }
+                    BitLine { label: "Diffusion".to_string(), bits: binary_broadcast.read().clone(), color: "limegreen".to_string() }
                 }
             }
         }
@@ -295,9 +373,9 @@ pub fn Subnetting() -> Element {
                         let ip_u32 = u32::from(ip_val);
                         let net = NetAddress::new(ip_u32, mask_val);
 
-                        let sous_reseaux = net.decouper_sous_reseau(new_mask_val);
+                        let sous_reseaux = net.subnet_split(new_mask_val);
                         let lignes = sous_reseaux.iter()
-                            .map(|s| s.to_string())
+                            .map(|s| format!("{:#}", s)) // Utiliser # pour formater avec le binaire
                             .collect::<Vec<_>>()
                             .join("\n");
 
@@ -316,7 +394,6 @@ pub fn Subnetting() -> Element {
         }
     }
 }
-
 
 #[component]
 pub fn FindMask() -> Element {
@@ -340,11 +417,11 @@ pub fn FindMask() -> Element {
                 class: "action-button",
                 onclick: move |_| {
                     if let Ok(count) = nb_ips.read().parse::<u32>() {
-                        let mask = NetAddress::determiner_masque(count);
+                        let mask = NetAddress::calcmask(count);
                         let full_mask = 0xFFFFFFFFu32 << (32 - mask);
 
                         result.set(format!("/{} → {}", mask, crate::components::format_ipv4(full_mask)));
-                        binary_mask.set(format!("Masque binaire : {:032b}", full_mask));
+                        binary_mask.set(format!("{:032b}", full_mask));
                     } else {
                         result.set("Entrée invalide".to_string());
                         binary_mask.set("".to_string());
@@ -356,9 +433,13 @@ pub fn FindMask() -> Element {
             p { class: "result", "{result.read()}" }
 
             if !binary_mask.read().is_empty() {
-                pre {
-                    style: "background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; font-family: monospace;",
-                    "{binary_mask.read()}"
+                div {
+                    style: "margin-top: 1rem;",
+                    p { "🧠 Représentation binaire du masque :" }
+                    div {
+                        style: "font-family: monospace; white-space: pre-wrap;",
+                        BitLine { label: "Masque".to_string(), bits: binary_mask.read().clone(), color: "limegreen".to_string() }
+                    }
                 }
             }
         }

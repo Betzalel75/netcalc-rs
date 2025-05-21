@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
 
 use crate::components::widget::WidgetsPage;
+#[allow(non_snake_case)]
 
 
 #[component]

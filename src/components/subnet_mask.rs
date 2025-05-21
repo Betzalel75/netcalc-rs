@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+#[allow(non_snake_case)]
 
 use crate::{address::NetAddress, components::format_ipv4};
 
@@ -14,7 +15,7 @@ pub fn SubnetMask() -> Element {
             input { class: "input-field",placeholder: "Nombre d'IPs", oninput: move |e| nb_ips.set(e.value().clone()) }
             button {  class: "action-button", onclick: move |_| {
                 if let Ok(nb) = nb_ips.read().parse::<u32>() {
-                    let mask = NetAddress::determiner_masque(nb);
+                    let mask = NetAddress::calcmask(nb);
                     let dec_mask = 0xFFFFFFFFu32 << (32 - mask);
                     result.set(format!("/{} => {}", mask, format_ipv4(dec_mask)));
                 } else {

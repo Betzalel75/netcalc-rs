@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 use crate::components::Theme;
+#[allow(non_snake_case)]
 
 
 #[component]

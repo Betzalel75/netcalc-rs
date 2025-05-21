@@ -62,3 +62,33 @@
     padding: 1.5rem;
   }
 }
+
+
+@media screen and (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        max-height: 95vh;
+        overflow-y: auto;
+        padding: 1rem;
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    .modal-content input,
+    .modal-content button {
+        width: 100%;
+        font-size: 1rem;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .input-field {
+        padding: 0.6rem;
+        font-size: 0.95rem;
+    }
+
+    .action-button {
+        padding: 0.6rem;
+        font-size: 0.95rem;
+    }
+}
