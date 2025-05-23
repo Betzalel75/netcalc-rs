@@ -6,15 +6,18 @@ pub fn Home() -> Element {
     let mut show_modal = use_signal(|| false);
 
     rsx! {
+        // script { 
+        //     "console.log('hello');"
+        // }
         div {
             class: "tool-container",
             h1 { "Bienvenue dans NetCalc-RS !" }
-            p { "Explorez les concepts fondamentaux de l'adressage IP via des outils visuels interactifs." }
+            p { "App pour se faciliter l'administration réseau." }
 
             button {
                 class: "action-button",
                 onclick: move |_| show_modal.set(true),
-                "📘 Théorie Réseau"
+                "📘 Mémo"
             }
 
             if *show_modal.read() {
@@ -52,7 +55,7 @@ pub fn Home() -> Element {
                             }
                         }
                         button {
-                            class: "action-button",
+                            class: "action-button close",
                             onclick: move |_| show_modal.set(false),
                             "Fermer"
                         }

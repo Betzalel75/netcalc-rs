@@ -92,3 +92,19 @@
         font-size: 0.95rem;
     }
 }
+
+/* TABLE */
+table {
+  margin-top: 20px;
+  border-collapse: collapse; /* Coller les bordures */
+  width: 50%; /* Largeur du tableau (50% de la largeur de l'écran) */
+}
+
+th, td {
+  border: 1px solid var(--text-color); /* Bordure noire */
+  padding: 8px; /* Espace intérieur */
+}
+
+th {
+  background-color: rgb(238, 152, 66); /* Fond des en-têtes en gris clair */
+}

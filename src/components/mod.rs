@@ -8,7 +8,7 @@ pub mod subnet_mask;
 pub mod broadcast;
 pub mod host_count;
 pub mod switcher;
-pub mod widget;
+pub mod widgets;
 
 
 #[derive(Clone, Copy, PartialEq)]

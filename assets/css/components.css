@@ -36,6 +36,10 @@
   backdrop-filter: blur(5px);
 }
 
+.action-button.close{
+  background: rgb(248, 39, 39);
+}
+
 .theme-btn {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid var(--border-color);
@@ -143,6 +147,8 @@
   box-shadow: var(--card-shadow);
   animation: fadeIn 0.3s ease-in-out;
   overflow-x: hidden;
+  max-height: 95vh;
+  overflow-y: auto;
 }
 
 .modal-content ul {

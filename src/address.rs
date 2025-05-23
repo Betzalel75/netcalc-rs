@@ -1,4 +1,3 @@
-
 pub struct NetAddress {
     pub address: u32,
     pub mask: u32,
@@ -15,12 +14,12 @@ impl NetAddress {
 
     pub fn ip_range(adresse: u32, masque: u32) -> (u32, u32) {
         let nombre_ips = 2u32.pow(32 - masque);
-        let premiere = if nombre_ips <= 2 {
-            adresse
+        let premiere = if nombre_ips < 2 { adresse } else { adresse + 1 };
+        let derniere = if masque < 31 {
+            adresse + nombre_ips - 2
         } else {
-            adresse + 1
+            adresse + 2
         };
-        let derniere = adresse + nombre_ips - 2;
         (premiere, derniere)
     }
 
@@ -69,6 +68,16 @@ impl NetAddress {
             (self.address >> 8) & 255,
             self.address & 255
         )
+    }
+    pub fn ip_to_string(&self) -> String {
+        String::from(format!(
+            "{}.{}.{}.{}/{}",
+            (self.address >> 24) & 255,
+            (self.address >> 16) & 255,
+            (self.address >> 8) & 255,
+            self.address & 255,
+            self.mask
+        ))
     }
 }
 

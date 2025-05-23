@@ -1,6 +1,5 @@
 use dioxus::prelude::*;
-
-use crate::components::widget::WidgetsPage;
+use crate::components::widgets::WidgetsPage;
 #[allow(non_snake_case)]
 
 

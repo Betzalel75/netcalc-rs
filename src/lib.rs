@@ -1,6 +1,7 @@
 pub use dioxus::prelude::*;
 pub mod address;
 pub mod components;
+pub mod display_table;
 
 pub const FAVICON: Asset = asset!("/assets/netcalc-rs.ico");
 pub const VARIABLES_CSS: Asset = asset!("/assets/css/variables.css");
