@@ -1,9 +1,6 @@
-use dioxus::prelude::*;
 use crate::display_table::Table;
+use dioxus::prelude::*;
 #[allow(non_snake_case)]
-
-
-
 #[component]
 pub fn Tables(table: Table) -> Element {
     rsx! {
@@ -27,8 +24,6 @@ pub fn Tables(table: Table) -> Element {
         }
     }
 }
-
-
 
 #[component]
 pub fn BitLine(label: String, bits: String, color: String) -> Element {
@@ -55,6 +50,50 @@ pub fn BitLine(label: String, bits: String, color: String) -> Element {
                         style: "color: {color}; margin-left: 8px;",
                         "{octet}"
                     }
+                }
+            }
+        }
+    }
+}
+
+#[component]
+pub fn BitCell(bit: char) -> Element {
+
+    rsx! {
+        div {
+            class: "bit",
+            "{bit}"
+        }
+    }
+}
+
+#[component]
+pub fn BitLines(
+    label: String,
+    bits: String,
+    line: u16,
+) -> Element {
+    let partie = 4;
+    let start_index = (partie - 1) * 8;
+    let end_index = start_index + 8;
+    let bits_clone = &bits[start_index..end_index];
+    rsx! {
+        div {
+            if line == 2 {
+                b { "{label} ", "&" }
+            }
+            if line == 3 {
+                hr {}
+                b { "{label} ", "=" }
+            }
+            div {
+                style: "font-family: monospace; display:flex;",
+                class: "calcul",
+                div { class: "ligne", id: "ligne{line}",
+                    span { class: "etiquette" }
+                for bit in bits_clone.chars() {
+                    BitCell { bit: bit }
+                }
                 }
             }
         }

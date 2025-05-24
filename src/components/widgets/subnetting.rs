@@ -46,20 +46,25 @@ pub fn Subnetting() -> Element {
                         mask.read().parse::<u32>(),
                         new_mask.read().parse::<u32>()
                     ) {
-                        let ip_u32 = u32::from(ip_val);
-                        let net = NetAddress::new(ip_u32, mask_val);
+                        if mask_val > 32 || mask_val < 1 || new_mask_val <= mask_val || new_mask_val > 32 {
+                            err.set(true);
+                        }else{
+                            err.set(false);
+                            let ip_u32 = u32::from(ip_val);
+                            let net = NetAddress::new(ip_u32, mask_val);
 
-                        let sous_reseaux = net.subnet_split(new_mask_val);
-                        let mut table = Table::new();
-                        table.headers = vec![String::from("IP"), String::from("Binaire")];
+                            let sous_reseaux = net.subnet_split(new_mask_val);
+                            let mut table = Table::new();
+                            table.headers = vec![String::from("IP"), String::from("Binaire")];
 
-                        for addr in &sous_reseaux {
-                            table.add_row(&[
-                                addr.ip_to_string(),
-                                addr.to_binary_string(),
-                            ]);
+                            for addr in &sous_reseaux {
+                                table.add_row(&[
+                                    addr.ip_to_string(),
+                                    addr.to_binary_string(),
+                                ]);
+                            }
+                            final_table.set(table); 
                         }
-                        final_table.set(table);
                     }else{
                         err.set(true);
                     }

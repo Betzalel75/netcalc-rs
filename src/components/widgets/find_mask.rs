@@ -19,6 +19,7 @@ pub fn FindMask() -> Element {
     let mut result = use_signal(|| Result::new());
     let mut binary_mask = use_signal(String::new);
     let mut _mask = use_signal(String::new);
+    let mut err = use_signal(|| false);
 
 
     rsx! {
@@ -37,21 +38,28 @@ pub fn FindMask() -> Element {
                     class: "action-button",
                     onclick: move |_| {
                         if let Ok(count) = nb_ips.read().parse::<u32>() {
-                            let mask = NetAddress::calcmask(count);
-                            let full_mask = 0xFFFFFFFFu32 << (32 - mask);
+                            if count < 1 {
+                               err.set(true); 
+                               binary_mask.set("".to_string());
+                               _mask.set("".to_string());
+                            }else{
+                                err.set(false);
+                                let mask = NetAddress::calcmask(count);
+                                let full_mask = 0xFFFFFFFFu32 << (32 - mask);
 
-                            let total_ips = count + 2;
-                            let h = (total_ips as f32).log2().ceil() as u32;
-                            let nr = 32 - h;
-                            _mask.set(format!("/{} → {}", mask, crate::components::format_ipv4(full_mask)));
+                                let total_ips = count + 2;
+                                let h = (total_ips as f32).log2().ceil() as u32;
+                                let nr = 32 - h;
+                                _mask.set(format!("/{} → {}", mask, crate::components::format_ipv4(full_mask)));
                             
-                            result.set(Result {
+                                result.set(Result {
                                         count: count,
                                         total_ips: total_ips,
                                         numb: h,
                                          nr: nr, });
                             
-                            binary_mask.set(format!("{:032b}", full_mask));
+                                binary_mask.set(format!("{:032b}", full_mask));
+                            }
                         } else {
                             binary_mask.set("".to_string());
                         }
@@ -94,6 +102,11 @@ pub fn FindMask() -> Element {
                             style: "font-family: monospace; white-space: pre-wrap;",
                             BitLine { label: "Masque".to_string(), bits: binary_mask.read().clone(), color: "limegreen".to_string() }
                         }
+                    }
+                }else  if *err.read() {
+                    pre {
+                        class: "result",
+                        "Entrées invalides"
                     }
                 }
             }

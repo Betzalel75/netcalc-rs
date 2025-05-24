@@ -26,11 +26,15 @@ pub fn SubnetSplit() -> Element {
                     mask.read().parse::<u32>(),
                     new_mask.read().parse::<u32>(),
                 ) {
-                    let ip_vec: Vec<u32> = ip_addr.octets().iter().map(|&b| b as u32).collect();
-                    let ip_u32 = (ip_vec[0] << 24) | (ip_vec[1] << 16) | (ip_vec[2] << 8) | ip_vec[3];
-                    let net = NetAddress::new(ip_u32, mask_val);
-                    let sous_reseaux = net.subnet_split(new_mask_val);
-                    result.set(sous_reseaux.iter().map(|s| s.to_string()).collect::<Vec<_>>().join("\n"));
+                    if mask_val > 32 || mask_val < 1 || new_mask_val <= mask_val || new_mask_val > 32 {
+                        result.set("Entrée invalide".to_string());
+                    }else{
+                        let ip_vec: Vec<u32> = ip_addr.octets().iter().map(|&b| b as u32).collect();
+                        let ip_u32 = (ip_vec[0] << 24) | (ip_vec[1] << 16) | (ip_vec[2] << 8) | ip_vec[3];
+                        let net = NetAddress::new(ip_u32, mask_val);
+                        let sous_reseaux = net.subnet_split(new_mask_val);
+                        result.set(sous_reseaux.iter().map(|s| s.to_string()).collect::<Vec<_>>().join("\n"));
+                    }
                 } else {
                     result.set("Entrées invalides".to_string());
                 }

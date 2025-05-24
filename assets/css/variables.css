@@ -15,8 +15,12 @@
   --light-accent: #f72585; /* Rose pour les accents */
   --light-border: rgba(209, 213, 219, 0.5); /* Bordure subtile */
   --light-card: rgba(255, 255, 255, 0.948); /* Fond des cartes */
+  --cell-bg: #7a7777;
+  --cell-txt: #e5e7eb;
 
   /* Dark Theme - Inspiré OneDark/Figma Dark */
+  --cell-bg: #fff;
+  --cell-txt: #111827;
   --dark-bg: rgba(17, 24, 39, 0.9); /* Bleu nuit profond */
   --dark-text: #e5e7eb; /* Blanc cassé */
   --dark-primary: #3a86ff; /* Bleu électrique */

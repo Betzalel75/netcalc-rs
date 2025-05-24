@@ -17,3 +17,5 @@ pub const MASK_SVG: Asset = asset!("/assets/images/mask.svg");
 pub const SUBNET_SVG: Asset = asset!("/assets/images/subnet.svg");
 pub const HELP_SVG: Asset = asset!("/assets/images/help.svg");
 pub const HOW_SVG: Asset = asset!("/assets/images/person-reading-a-book-question-mark.svg");
+
+pub const SCRIPT: Asset = asset!("/assets/js/index.js");

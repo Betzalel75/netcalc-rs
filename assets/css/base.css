@@ -48,3 +48,47 @@ pre {
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
+
+/* ANIME BITE */
+
+.calcul {
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    .ligne {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 5px;
+    }
+
+    .bit {
+      width: 30px;
+      height: 30px;
+      line-height: 30px;
+      margin: 0 2px;
+      text-align: center;
+      background-color: var(--cell-bg);
+      color: var(--cell-txt);
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .bit.active {
+      background-color: #bd3939;
+    }
+
+    .etiquette {
+      margin-right: 10px;
+      font-weight: bold;
+      width: 30px;
+      text-align: right;
+    }
+
+    hr {
+      border: none;
+      border-top: 2px solid #333;
+      /* margin: 10px auto; */
+      width: 350px;
+    }

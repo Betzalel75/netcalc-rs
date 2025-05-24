@@ -15,9 +15,13 @@ pub fn SubnetMask() -> Element {
             input { class: "input-field",placeholder: "Nombre d'IPs", oninput: move |e| nb_ips.set(e.value().clone()) }
             button {  class: "action-button", onclick: move |_| {
                 if let Ok(nb) = nb_ips.read().parse::<u32>() {
-                    let mask = NetAddress::calcmask(nb);
-                    let dec_mask = 0xFFFFFFFFu32 << (32 - mask);
-                    result.set(format!("/{} => {}", mask, format_ipv4(dec_mask)));
+                    if nb < 1 {
+                        result.set("Entrée invalide".to_string());
+                    }else{   
+                        let mask = NetAddress::calcmask(nb);
+                        let dec_mask = 0xFFFFFFFFu32 << (32 - mask);
+                        result.set(format!("/{} => {}", mask, format_ipv4(dec_mask)));
+                    }
                 } else {
                     result.set("Entrée invalide".to_string());
                 }

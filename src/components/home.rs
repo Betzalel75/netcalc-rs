@@ -1,4 +1,6 @@
 use dioxus::prelude::*;
+
+// use crate::SCRIPT;
 #[allow(non_snake_case)]
 
 #[component]
@@ -6,9 +8,7 @@ pub fn Home() -> Element {
     let mut show_modal = use_signal(|| false);
 
     rsx! {
-        // script { 
-        //     "console.log('hello');"
-        // }
+        
         div {
             class: "tool-container",
             h1 { "Bienvenue dans NetCalc-RS !" }
@@ -21,6 +21,9 @@ pub fn Home() -> Element {
             }
 
             if *show_modal.read() {
+                // script { 
+                //     script { src:SCRIPT }
+                // }
                 div {
                     class: "modal-overlay",
                     onclick: move |_| show_modal.set(false), // Ferme si clic sur overlay
