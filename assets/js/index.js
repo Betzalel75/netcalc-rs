@@ -1,5 +1,4 @@
-function demarrerAnimation() {
-  console.log("hello du fichier js");
+function start() {
   const lignes = [
     document.querySelectorAll('#ligne1 .bit'),
     document.querySelectorAll('#ligne2 .bit'),
@@ -10,7 +9,7 @@ function demarrerAnimation() {
   let delay = 0;
   const interval = 1000;
 
-  function animerColonne(i) {
+  function animCol(i) {
     for (let ligne of lignes) {
       const bit = ligne[i]; // ici, ligne est une NodeList de .bit
       setTimeout(() => {
@@ -25,19 +24,19 @@ function demarrerAnimation() {
     }
   }
 
-  function lancerUneAnimation() {
+  function run() {
     col = lignes[0].length - 1; // Réinitialiser la colonne à chaque exécution
     delay = 0; // Réinitialiser le délai
     for (; col >= 0; col--) {
-      animerColonne(col);
+      animCol(col);
     }
 
     // Une fois l'animation terminée, la relancer après un délai
     const delaiTotalAnimation = lignes[0].length * lignes.length * interval;
-    setTimeout(lancerUneAnimation, delaiTotalAnimation + 500);
+    setTimeout(run, delaiTotalAnimation + 500);
   }
 
-  lancerUneAnimation(); // Démarrer la première animation
+  run(); // Démarrer la première animation
 }
 
-demarrerAnimation();
+start();

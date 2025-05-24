@@ -52,43 +52,88 @@ pre {
 /* ANIME BITE */
 
 .calcul {
-      display: inline-block;
-      margin-bottom: 20px;
-    }
+    display: inline-block;
+    margin-bottom: 20px;
+}
 
-    .ligne {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 5px;
-    }
+.ligne {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 5px;
+}
 
-    .bit {
-      width: 30px;
-      height: 30px;
-      line-height: 30px;
-      margin: 0 2px;
-      text-align: center;
-      background-color: var(--cell-bg);
-      color: var(--cell-txt);
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      transition: background-color 0.3s;
-    }
+.bit {
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    margin: 0 2px;
+    text-align: center;
+    background-color: var(--cell-bg);
+    color: var(--cell-txt);
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
 
-    .bit.active {
-      background-color: #bd3939;
-    }
+.bit.active {
+    background-color: #bd3939;
+}
 
-    .etiquette {
-      margin-right: 10px;
-      font-weight: bold;
-      width: 30px;
-      text-align: right;
-    }
+.etiquette {
+    margin-right: 10px;
+    font-weight: bold;
+    width: 30px;
+    text-align: right;
+}
 
-    hr {
-      border: none;
-      border-top: 2px solid #333;
-      /* margin: 10px auto; */
-      width: 350px;
-    }
+hr {
+    border: none;
+    border-top: 2px solid #333;
+    /* margin: 10px auto; */
+    width: 350px;
+}
+
+/* bouton next prev */
+.octet-nav {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.octet-nav p {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    /*font-size: 1rem;*/
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(135deg, #4e54c8, #8f94fb);
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(78, 84, 200, 0.4);
+}
+
+.btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 5px rgba(78, 84, 200, 0.2);
+}

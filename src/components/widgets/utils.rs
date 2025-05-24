@@ -72,9 +72,9 @@ pub fn BitLines(
     label: String,
     bits: String,
     line: u16,
+    part: usize
 ) -> Element {
-    let partie = 4;
-    let start_index = (partie - 1) * 8;
+    let start_index = (part - 1) * 8;
     let end_index = start_index + 8;
     let bits_clone = &bits[start_index..end_index];
     rsx! {
