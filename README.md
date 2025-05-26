@@ -11,6 +11,35 @@
 
 ---
 
+
+## ⚙️ Installation
+
+**curl:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Betzalel75/netcalc-rs/master/scripts/install_netcalc-rs.sh | sh
+```
+
+**wget:**
+
+```bash
+wget -qO- https://raw.githubusercontent.com/Betzalel75/netcalc-rs/master/scripts/install_netcalc-rs.sh | sh
+```
+
+## 🧹 Désinstallation / Uninstallation
+
+**curl:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Betzalel75/netcalc-rs/master/scripts/uninstall_netcalc-rs.sh | sh
+```
+
+**wget:**
+
+```bash
+wget -qO- https://raw.githubusercontent.com/Betzalel75/netcalc-rs/master/scripts/uninstall_netcalc-rs.sh | sh
+```
+
 ## 🌐 Language / Langue
 
 For more details about the project, please read the README in your preferred language:

@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=NetCalc
+Name=NetCalc-rs
 Comment=Calculateur d’adressage IP
 Exec=netcalc-rs
 Icon=netcalc-rs
