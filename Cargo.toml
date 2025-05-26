@@ -3,7 +3,9 @@ name = "netcalc-rs"
 version = "0.1.0"
 authors = ["betzalel75"]
 edition = "2021"
-
+license = "GPLV3"
+readme = "README.md"
+description = "Calculateur graphique d'adressage IP en Rust avec Dioxus"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -27,3 +29,16 @@ inherits = "dev"
 
 [profile.android-dev]
 inherits = "dev"
+
+[package.metadata.deb]
+name = "netcalc-rs"
+maintainer = "Betzalel75"
+depends = ""
+section = "utils"
+priority = "optional"
+assets = [
+    ["target/release/netcalc-rs", "~/.local/bin/netcalc-rs/netcalc-rs", "755"],
+    ["target/release/assets/*", "~/.local/bin/netcalc-rs/assets", "644"],
+    ["debian/netcalc-rs.desktop", "usr/share/applications/netcalc-rs.desktop", "644"],
+    ["assets/images/netcalc-rs.png", "usr/share/pixmaps/netcalc-rs.png", "644"],
+]

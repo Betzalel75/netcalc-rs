@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=NetCalc
+Comment=Calculateur d’adressage IP
+Exec=netcalc-rs
+Icon=netcalc-rs
+Terminal=false
+Type=Application
+Categories=Utility;Network;
