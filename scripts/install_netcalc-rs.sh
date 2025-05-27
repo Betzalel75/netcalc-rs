@@ -10,7 +10,7 @@ BIN_DIR="$HOME/.local/bin"
 DESKTOP_DIR="$HOME/.local/share/applications"
 ICON_DIR="$HOME/.local/share/icons"
 
-echo "[*] Téléchargement de NetCalc-rs ($VERSION)"
+sudo echo "[*] Téléchargement de NetCalc-rs ($VERSION)"
 
 # Création dossier temporaire
 mkdir -p "$TMP_DIR"
@@ -32,9 +32,9 @@ tar -xzf *.tar.gz
 cd app/
 
 # Permissions
-# echo "[-] Définition des permissions"
-# chmod 755 netcalc-rs
-# chmod -R 644 assets
+sudo echo "[-] Définition des permissions"
+sudo chmod 755 netcalc-rs
+sudo chmod -R 644 assets
 
 # Déplacer les fichiers
 echo "[-] Déplacement des fichiers"
