@@ -19,25 +19,25 @@ fi
 # Supprimer le lien symbolique
 if [ -L "$BIN_LINK" ]; then
     echo "[-] Suppression du lien binaire $BIN_LINK"
-    rm "$BIN_LINK"
+    sudo rm "$BIN_LINK"
 fi
 
 # Supprimer le dossier de l'application
 if [ -d "$APP_DIR" ]; then
     echo "[-] Suppression du dossier de l'application $APP_DIR"
-    rm -rf "$APP_DIR"
+    sudo rm -rf "$APP_DIR"
 fi
 
 # Supprimer le fichier .desktop
 if [ -f "$DESKTOP_FILE" ]; then
     echo "[-] Suppression de l'entrée de menu $DESKTOP_FILE"
-    rm "$DESKTOP_FILE"
+    sudo rm "$DESKTOP_FILE"
 fi
 
 # Supprimer l’icône
 if [ -f "$ICON_FILE" ]; then
     echo "[-] Suppression de l’icône $ICON_FILE"
-    rm "$ICON_FILE"
+    sudo rm "$ICON_FILE"
 fi
 
 echo "[✔] NetCalc-rs a été désinstallé proprement.🧹"

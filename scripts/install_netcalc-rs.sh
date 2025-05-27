@@ -9,6 +9,7 @@ INSTALL_DIR="$HOME/.local/netcalc-rs.app"
 BIN_DIR="$HOME/.local/bin"
 DESKTOP_DIR="$HOME/.local/share/applications"
 ICON_DIR="$HOME/.local/share/icons"
+USER=$(whoami)
 
 sudo echo "[*] Téléchargement de NetCalc-rs ($VERSION)"
 
@@ -29,6 +30,7 @@ curl -LO "$RELEASE_URL"
 # Extraire l'archive
 echo "[-] Décompression..."
 tar -xzf *.tar.gz
+sudo chown -R $USER:$USER app/
 cd app/
 
 # Permissions
@@ -38,9 +40,11 @@ sudo chmod -R 644 assets
 
 # Déplacer les fichiers
 echo "[-] Déplacement des fichiers"
-mkdir -p "$INSTALL_DIR"
-mv netcalc-rs "$INSTALL_DIR/"
-mv assets "$INSTALL_DIR/"
+sudo mkdir -p "$INSTALL_DIR"
+
+sudo mv netcalc-rs "$INSTALL_DIR/"
+
+sudo mv assets "$INSTALL_DIR/"
 
 # Créer le lien symbolique
 mkdir -p "$BIN_DIR"
@@ -53,8 +57,8 @@ read answer
 if [ "$answer" = "o" ]; then
   echo "[-] Copie des fichiers pour le menu"
   mkdir -p "$DESKTOP_DIR" "$ICON_DIR"
-  install -Dm 644 debian/netcalc-rs.desktop "$DESKTOP_DIR/netcalc-rs.desktop"
-  install -Dm 644 assets/images/netcalc-rs.png "$ICON_DIR/netcalc-rs.png"
+  sudo install -Dm 644 debian/netcalc-rs.desktop "$DESKTOP_DIR/netcalc-rs.desktop"
+  sudo install -Dm 644 assets/images/netcalc-rs.png "$ICON_DIR/netcalc-rs.png"
   echo "[+] Application ajoutée au menu"
 else
   echo "[-] L'application sera disponible uniquement en ligne de commande."
@@ -63,7 +67,7 @@ fi
 # Nettoyage
 echo "[-] Nettoyage 🧹"
 cd $HOME
-rm -rf "$TMP_DIR"
+sudo rm -rf "$TMP_DIR"
 
 echo "[✔] Installation terminée ! Essayez : netcalc-rs"
 
@@ -87,4 +91,3 @@ esac
 
 echo
 echo "[✓] Vous pouvez maintenant exécuter l'application avec : netcalc-rs"
-
