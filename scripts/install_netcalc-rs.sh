@@ -22,6 +22,7 @@ if [ "$VERSION" = "latest" ]; then
 else
   RELEASE_URL="https://github.com/$REPO/releases/download/$VERSION/netcalc-rs-$VERSION.tar.gz"
 fi
+RELEASE_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep "browser_download_url" | grep '\.tar\.gz' | cut -d '"' -f 4)
 
 echo "[-] URL de téléchargement : $RELEASE_URL"
 curl -LO "$RELEASE_URL"
