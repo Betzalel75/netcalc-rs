@@ -56,7 +56,7 @@ sudo mkdir -p "$INSTALL_DIR"
 
 sudo mv netcalc-rs "$INSTALL_DIR/"
 
-sudo mv assets "$INSTALL_DIR/"
+sudo cp assets "$INSTALL_DIR/"
 
 # Créer le lien symbolique
 mkdir -p "$BIN_DIR"
