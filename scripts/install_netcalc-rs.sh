@@ -4,14 +4,26 @@ set -e
 
 REPO="Betzalel75/netcalc-rs"
 VERSION="${1:-latest}"
-TMP_DIR="/tmp/netcalc-rs-install"
+TMP_DIR="$HOME/.tmp/netcalc-rs-install"
 INSTALL_DIR="$HOME/.local/netcalc-rs.app"
 BIN_DIR="$HOME/.local/bin"
 DESKTOP_DIR="$HOME/.local/share/applications"
 ICON_DIR="$HOME/.local/share/icons"
 USER=$(whoami)
 
-sudo echo "[*] Téléchargement de NetCalc-rs ($VERSION)"
+# Verifier les dependances
+command -v curl >/dev/null 2>&1 || { echo >&2 "[-] curl est requis pour installer NetCalc-rs."; exit 1; }
+command -v tar >/dev/null 2>&1 || { echo >&2 "[-] tar est requis pour installer NetCalc-rs."; exit 1; }
+
+# Installer les dependances
+echo "[*] Installation des dependances"
+if dpkg -s "libxdo3" >/dev/null 2>&1; then
+  echo "[✔] libxdo3 Ok"
+else
+  sudo apt-get install -y libxdo3
+fi
+
+echo "[*] Téléchargement de NetCalc-rs ($VERSION)"
 
 # Création dossier temporaire
 mkdir -p "$TMP_DIR"
@@ -30,12 +42,12 @@ curl -LO "$RELEASE_URL"
 # Extraire l'archive
 echo "[-] Décompression..."
 tar -xzf *.tar.gz
-sudo chown -R $USER:$USER app/
 cd app/
 
 # Permissions
-sudo echo "[-] Définition des permissions"
-sudo chmod 755 netcalc-rs
+echo "[-] Définition des permissions"
+sudo chown -R "$USER":"$USER" .
+sudo chmod +x netcalc-rs
 sudo chmod -R 644 assets
 
 # Déplacer les fichiers
