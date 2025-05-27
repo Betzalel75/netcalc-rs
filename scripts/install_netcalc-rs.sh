@@ -44,11 +44,6 @@ echo "[-] Décompression xz..."
 tar -Jxvf *.tar.xz 
 cd app/
 
-# Permissions
-echo "[-] Définition des permissions"
-sudo chown -R "$USER":"$USER" .
-chmod +x netcalc-rs
-chmod -R 644 assets
 
 # Déplacer les fichiers
 echo "[-] Déplacement des fichiers"
@@ -62,19 +57,12 @@ cp -r assets "$INSTALL_DIR/"
 mkdir -p "$BIN_DIR"
 ln -sf "$INSTALL_DIR/netcalc-rs" "$BIN_DIR/netcalc-rs"
 
-# Intégration menu
-# echo "Ajouter l'application au menu ? (o/N)"
-# read answer
 
-# if [ "$answer" = "o" ]; then
-# echo "[-] Copie des fichiers pour le menu"
 mkdir -p "$DESKTOP_DIR" "$ICON_DIR"
 install -Dm 644 debian/netcalc-rs.desktop "$DESKTOP_DIR/netcalc-rs.desktop"
 install -Dm 644 assets/images/netcalc-rs.png "$ICON_DIR/netcalc-rs.png"
 echo "[+] Application ajoutée au menu"
-# else
-#   echo "[-] L'application sera disponible uniquement en ligne de commande."
-# fi
+
 
 # Nettoyage
 echo "[-] Nettoyage 🧹"
