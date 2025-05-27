@@ -31,9 +31,9 @@ cd "$TMP_DIR"
 
 # Télécharger la dernière release
 if [ "$VERSION" = "latest" ]; then
-  RELEASE_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep "browser_download_url" | grep '\.tar\.gz' | cut -d '"' -f 4)
+  RELEASE_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep "browser_download_url" | grep '\.tar\.xz' | cut -d '"' -f 4)
 else
-    RELEASE_URL="https://github.com/$REPO/releases/download/$VERSION/app.tar.gz"
+    RELEASE_URL="https://github.com/$REPO/releases/download/$VERSION/app.tar.xz"
 fi
 
 echo "[-] URL de téléchargement : $RELEASE_URL"
