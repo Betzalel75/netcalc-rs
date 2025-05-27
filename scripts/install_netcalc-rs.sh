@@ -32,9 +32,9 @@ tar -xzf *.tar.gz
 cd app/
 
 # Permissions
-echo "[-] Définition des permissions"
-chmod 755 netcalc-rs
-chmod -R 644 assets
+# echo "[-] Définition des permissions"
+# chmod 755 netcalc-rs
+# chmod -R 644 assets
 
 # Déplacer les fichiers
 echo "[-] Déplacement des fichiers"
