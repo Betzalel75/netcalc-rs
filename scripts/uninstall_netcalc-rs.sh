@@ -8,13 +8,6 @@ DESKTOP_FILE="$HOME/.local/share/applications/netcalc-rs.desktop"
 ICON_FILE="$HOME/.local/share/icons/netcalc-rs.png"
 
 echo "[!] Cette opération va désinstaller NetCalc-rs de votre système."
-echo "Confirmer ? (o/N):"
-read confirm
-
-if [ "$confirm" != "o" ]; then
-    echo "[-] Désinstallation annulée."
-    exit 0
-fi
 
 # Supprimer le lien symbolique
 if [ -L "$BIN_LINK" ]; then
