@@ -8,7 +8,8 @@ DESKTOP_FILE="$HOME/.local/share/applications/netcalc-rs.desktop"
 ICON_FILE="$HOME/.local/share/icons/netcalc-rs.png"
 
 echo "[!] Cette opération va désinstaller NetCalc-rs de votre système."
-read -p "Confirmer ? (o/N): " confirm
+echo "Confirmer ? (o/N):"
+read confirm
 
 if [ "$confirm" != "o" ]; then
     echo "[-] Désinstallation annulée."
