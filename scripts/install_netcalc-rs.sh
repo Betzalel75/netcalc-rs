@@ -3,7 +3,7 @@
 set -e
 
 REPO="Betzalel75/netcalc-rs"
-VERSION="${1:-v1.0}"
+VERSION="${1:-latest}"
 TMP_DIR="/tmp/netcalc-rs-install"
 INSTALL_DIR="$HOME/.local/netcalc-rs.app"
 BIN_DIR="$HOME/.local/bin"
@@ -17,7 +17,11 @@ mkdir -p "$TMP_DIR"
 cd "$TMP_DIR"
 
 # Télécharger la dernière release
-RELEASE_URL="https://github.com/$REPO/releases/download/$VERSION/app.tar.gz"
+if [ "$VERSION" = "latest" ]; then
+  RELEASE_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep "browser_download_url" | grep '\.tar\.gz' | cut -d '"' -f 4)
+else
+    RELEASE_URL="https://github.com/$REPO/releases/download/$VERSION/app.tar.gz"
+fi
 
 echo "[-] URL de téléchargement : $RELEASE_URL"
 curl -LO "$RELEASE_URL"
