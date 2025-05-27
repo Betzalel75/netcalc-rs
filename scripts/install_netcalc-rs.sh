@@ -17,7 +17,7 @@ mkdir -p "$TMP_DIR"
 cd "$TMP_DIR"
 
 # Télécharger la dernière release
-RELEASE_URL="https://github.com/$REPO/releases/download/$VERSION/netcalc-rs-$VERSION.tar.gz"
+RELEASE_URL="https://github.com/$REPO/releases/download/$VERSION/app.tar.gz"
 
 echo "[-] URL de téléchargement : $RELEASE_URL"
 curl -LO "$RELEASE_URL"
