@@ -40,8 +40,8 @@ echo "[-] URL de téléchargement : $RELEASE_URL"
 curl -LO "$RELEASE_URL"
 
 # Extraire l'archive
-echo "[-] Décompression..."
-tar -xzf *.tar.gz
+echo "[-] Décompression xz..."
+tar -Jxvf *.tar.xz 
 cd app/
 
 # Permissions
