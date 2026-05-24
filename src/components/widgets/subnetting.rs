@@ -1,8 +1,10 @@
 use std::net::Ipv4Addr;
 use dioxus::prelude::*;
-use crate::{address::NetAddress, components::widgets::utils::Tables, display_table::Table};
-#[allow(non_snake_case)]
-
+use crate::{
+    address::NetAddress,
+    components::widgets::utils::Tables,
+    display_table::Table,
+};
 
 #[component]
 pub fn Subnetting() -> Element {
@@ -23,14 +25,12 @@ pub fn Subnetting() -> Element {
                 value: "{ip}",
                 oninput: move |e| ip.set(e.value().clone())
             }
-
             input {
                 class: "input-field",
                 placeholder: "Masque actuel (ex: 24)",
                 value: "{mask}",
                 oninput: move |e| mask.set(e.value().clone())
             }
-
             input {
                 class: "input-field",
                 placeholder: "Nouveau masque (ex: 26)",
@@ -41,47 +41,51 @@ pub fn Subnetting() -> Element {
             button {
                 class: "action-button",
                 onclick: move |_| {
-                    if let (Ok(ip_val), Ok(mask_val), Ok(new_mask_val)) = (
+                    if let (Ok(ip_addr), Ok(mask_val), Ok(new_mask_val)) = (
                         ip.read().parse::<Ipv4Addr>(),
                         mask.read().parse::<u32>(),
                         new_mask.read().parse::<u32>()
                     ) {
-                        if mask_val > 32 || mask_val < 1 || new_mask_val <= mask_val || new_mask_val > 32 {
-                            err.set(true);
-                        }else{
-                            err.set(false);
-                            let ip_u32 = u32::from(ip_val);
-                            let net = NetAddress::new(ip_u32, mask_val);
-
-                            let sous_reseaux = net.subnet_split(new_mask_val);
-                            let mut table = Table::new();
-                            table.headers = vec![String::from("IP"), String::from("Binaire")];
-
-                            for addr in &sous_reseaux {
-                                table.add_row(&[
-                                    addr.ip_to_string(),
-                                    addr.to_binary_string(),
-                                ]);
+                        match NetAddress::from_ip_and_mask(ip_addr, mask_val) {
+                            Ok(net) => match net.subnet_split(new_mask_val) {
+                                Ok(subnets) => {
+                                    err.set(false);
+                                    let mut table = Table::new();
+                                    table.headers = vec![
+                                        "IP".to_string(),
+                                        "Binaire".to_string(),
+                                    ];
+                                    for addr in &subnets {
+                                        table.add_row(&[
+                                            addr.to_cidr_string(),
+                                            addr.to_binary_string(),
+                                        ]);
+                                    }
+                                    final_table.set(table);
+                                }
+                                Err(_) => {
+                                    err.set(true);
+                                    final_table.set(Table::new());
+                                }
+                            },
+                            Err(_) => {
+                                err.set(true);
+                                final_table.set(Table::new());
                             }
-                            final_table.set(table); 
                         }
-                    }else{
+                    } else {
                         err.set(true);
+                        final_table.set(Table::new());
                     }
                 },
                 "Découper"
             }
+
             if final_table.read().body.is_empty() || *err.read() {
-                if *err.read(){
-                    pre {
-                        class: "result",
-                        "Entrées invalides"
-                    }
-                }else{
-                    pre {
-                        class: "result",
-                        "Aucun sous-réseau à afficher"
-                    }
+                if *err.read() {
+                    pre { class: "result", "Entrées invalides" }
+                } else {
+                    pre { class: "result", "Aucun sous-réseau à afficher" }
                 }
             } else {
                 Tables { table: final_table.read().clone() }

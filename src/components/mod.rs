@@ -10,6 +10,12 @@ pub mod host_count;
 pub mod switcher;
 pub mod widgets;
 
+// Nouvelles fonctionnalités
+pub mod vlsm;
+pub mod summarize;
+pub mod ip_checker;
+pub mod wildcard;
+pub mod converter;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum View {
@@ -19,6 +25,11 @@ pub enum View {
     Broadcast,
     HostCount,
     SubnetSplit,
+    Vlsm,
+    Summarize,
+    IpChecker,
+    Wildcard,
+    Converter,
     Help,
 }
 
@@ -39,14 +50,7 @@ pub enum Modal {
 }
 
 
-pub fn format_ipv4(ip: u32) -> String {
-    format!("{}.{}.{}.{}",
-        (ip >> 24) & 255,
-        (ip >> 16) & 255,
-        (ip >> 8) & 255,
-        ip & 255
-    )
-}
+pub use crate::address::format_ipv4;
 
 impl View {
     pub fn to_string(&self) -> &'static str {
@@ -57,6 +61,11 @@ impl View {
             View::Broadcast => "broadcast",
             View::HostCount => "host-count",
             View::SubnetSplit => "subnet-split",
+            View::Vlsm => "vlsm",
+            View::Summarize => "summarize",
+            View::IpChecker => "ip-checker",
+            View::Wildcard => "wildcard",
+            View::Converter => "converter",
             View::Help => "help",
         }
     }
