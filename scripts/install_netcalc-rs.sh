@@ -41,7 +41,7 @@ curl -LO "$RELEASE_URL"
 
 # Extraire l'archive
 echo "[-] Décompression xz..."
-tar -Jxvf *.tar.xz 
+tar -Jxvf '*.tar.xz' 
 cd app/
 
 
@@ -66,7 +66,7 @@ echo "[+] Application ajoutée au menu"
 
 # Nettoyage
 echo "[-] Nettoyage 🧹"
-cd $HOME
+cd "$HOME"
 sudo rm -rf "$TMP_DIR"
 
 echo "[✔] Installation terminée ! Essayez : netcalc-rs"
