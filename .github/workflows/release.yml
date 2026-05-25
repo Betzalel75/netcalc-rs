@@ -72,7 +72,9 @@ jobs:
 
       - name: Installer dioxus-cli (builds natifs uniquement)
         if: matrix.target != 'aarch64-unknown-linux-gnu'
-        run: cargo install dioxus-cli
+        run: |
+            cargo install cargo-binstall
+            cargo binstall dioxus-cli
 
       - name: Compiler (build natif x86_64)
         if: matrix.target == 'x86_64-unknown-linux-gnu'
@@ -127,7 +129,9 @@ jobs:
         run: brew install gtk+3 pkg-config libsoup
 
       - name: Installer dioxus-cli
-        run: cargo install dioxus-cli
+        run: |
+            cargo install cargo-binstall
+            cargo binstall dioxus-cli
 
       - name: Compiler (dx bundle)
         run: dx bundle --release --platform desktop --target ${{ matrix.target }}
@@ -170,7 +174,9 @@ jobs:
 
       - name: Installer dioxus-cli (dans MSYS2)
         shell: msys2 {0}
-        run: cargo install dioxus-cli
+        run: |
+            cargo install cargo-binstall
+            cargo binstall dioxus-cli
 
       - name: Compiler (dx bundle)
         shell: msys2 {0}
