@@ -2,35 +2,31 @@
 
 set -e
 
+OS="$(uname -s)"
+case "$OS" in
+  Linux)  OS="linux" ;;
+  Darwin) OS="macos" ;;
+  *)      echo "[-] OS non supporté" ; exit 1 ;;
+esac
+
 APP_DIR="$HOME/.local/netcalc-rs.app"
 BIN_LINK="$HOME/.local/bin/netcalc-rs"
-DESKTOP_FILE="$HOME/.local/share/applications/netcalc-rs.desktop"
-ICON_FILE="$HOME/.local/share/icons/netcalc-rs.png"
 
-echo "[!] Cette opération va désinstaller NetCalc-rs de votre système."
+echo "[!] Désinstallation de NetCalc-rs ($OS)"
 
-# Supprimer le lien symbolique
-if [ -L "$BIN_LINK" ]; then
-    echo "[-] Suppression du lien binaire $BIN_LINK"
-    rm "$BIN_LINK"
-fi
+rm -f "$BIN_LINK"
+echo "[-] Lien supprimé : $BIN_LINK"
 
-# Supprimer le dossier de l'application
 if [ -d "$APP_DIR" ]; then
-    echo "[-] Suppression du dossier de l'application $APP_DIR"
-    rm -rf "$APP_DIR"
+  rm -rf "$APP_DIR"
+  echo "[-] Dossier supprimé : $APP_DIR"
 fi
 
-# Supprimer le fichier .desktop
-if [ -f "$DESKTOP_FILE" ]; then
-    echo "[-] Suppression de l'entrée de menu $DESKTOP_FILE"
-    rm "$DESKTOP_FILE"
+if [ "$OS" = "linux" ]; then
+  DESKTOP_FILE="$HOME/.local/share/applications/netcalc-rs.desktop"
+  ICON_FILE="$HOME/.local/share/icons/netcalc-rs.png"
+  rm -f "$DESKTOP_FILE" && echo "[-] Entrée de menu supprimée"
+  rm -f "$ICON_FILE"    && echo "[-] Icône supprimée"
 fi
 
-# Supprimer l’icône
-if [ -f "$ICON_FILE" ]; then
-    echo "[-] Suppression de l’icône $ICON_FILE"
-    rm "$ICON_FILE"
-fi
-
-echo "[✔] NetCalc-rs a été désinstallé proprement.🧹"
+echo "[✔] NetCalc-rs désinstallé."

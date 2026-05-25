@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
@@ -7,87 +7,126 @@ VERSION="${1:-latest}"
 TMP_DIR="$HOME/.tmp/netcalc-rs-install"
 INSTALL_DIR="$HOME/.local/netcalc-rs.app"
 BIN_DIR="$HOME/.local/bin"
-DESKTOP_DIR="$HOME/.local/share/applications"
-ICON_DIR="$HOME/.local/share/icons"
-USER=$(whoami)
 
-# Verifier les dependances
-command -v curl >/dev/null 2>&1 || { echo >&2 "[-] curl est requis pour installer NetCalc-rs."; exit 1; }
-command -v tar >/dev/null 2>&1 || { echo >&2 "[-] tar est requis pour installer NetCalc-rs."; exit 1; }
+# Détection de l'OS
+OS="$(uname -s)"
+case "$OS" in
+  Linux)   OS="linux" ;;
+  Darwin)  OS="macos"  ;;
+  *)
+    echo "[-] OS non supporté : $OS"
+    echo "    Linux et macOS sont supportés."
+    exit 1
+    ;;
+esac
 
-# Installer les dependances
-echo "[*] Installation des dependances"
-if dpkg -s "libxdo3" >/dev/null 2>&1; then
-  echo "[✔] libxdo3 Ok"
-else
-  sudo apt-get install -y libxdo3
+echo "[*] Système détecté : $OS"
+
+# ── Dépendances système ──────────────────────────────────────────────
+echo "[*] Vérification des dépendances"
+command -v curl >/dev/null 2>&1 || { echo "[-] curl est requis."; exit 1; }
+command -v tar  >/dev/null 2>&1 || { echo "[-] tar est requis."; exit 1; }
+
+if [ "$OS" = "linux" ]; then
+  if dpkg -s "libxdo3" >/dev/null 2>&1; then
+    echo "[✔] libxdo3 déjà installé"
+  else
+    echo "[*] Installation de libxdo3..."
+    sudo apt-get install -y libxdo3
+  fi
 fi
 
+# ── Téléchargement ───────────────────────────────────────────────────
 echo "[*] Téléchargement de NetCalc-rs ($VERSION)"
-
-# Création dossier temporaire
 mkdir -p "$TMP_DIR"
 cd "$TMP_DIR"
 
-# Télécharger la dernière release
 if [ "$VERSION" = "latest" ]; then
-  RELEASE_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep "browser_download_url" | grep '\.tar\.xz' | cut -d '"' -f 4)
+  # API GitHub → filtrer par OS
+  if [ "$OS" = "macos" ]; then
+    # Prend l'archive macOS (Apple Silicon si dispo, sinon Intel)
+    RELEASE_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" \
+      | grep "browser_download_url" \
+      | grep 'apple-darwin\.tar\.xz' \
+      | head -1 \
+      | cut -d '"' -f 4)
+  else
+    RELEASE_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" \
+      | grep "browser_download_url" \
+      | grep 'linux.*\.tar\.xz' \
+      | head -1 \
+      | cut -d '"' -f 4)
+  fi
 else
+  if [ "$OS" = "macos" ]; then
+    RELEASE_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/tags/$VERSION" \
+      | grep "browser_download_url" \
+      | grep 'apple-darwin\.tar\.xz' \
+      | head -1 \
+      | cut -d '"' -f 4)
+  else
     RELEASE_URL="https://github.com/$REPO/releases/download/$VERSION/app.tar.xz"
+  fi
 fi
 
-echo "[-] URL de téléchargement : $RELEASE_URL"
-curl -LO "$RELEASE_URL"
+if [ -z "$RELEASE_URL" ]; then
+  echo "[-] Aucun téléchargement trouvé pour $OS / $VERSION"
+  exit 1
+fi
 
-# Extraire l'archive
-echo "[-] Décompression xz..."
-tar -Jxvf '*.tar.xz' 
+echo "[-] Téléchargement : $RELEASE_URL"
+curl -sL -o archive.tar.xz "$RELEASE_URL"
+
+# ── Extraction ───────────────────────────────────────────────────────
+echo "[-] Extraction..."
+tar -Jxf archive.tar.xz
 cd app/
 
-
-# Déplacer les fichiers
-echo "[-] Déplacement des fichiers"
+# ── Installation ─────────────────────────────────────────────────────
+echo "[-] Installation dans $INSTALL_DIR"
 mkdir -p "$INSTALL_DIR"
+cp netcalc-rs* "$INSTALL_DIR/" 2>/dev/null || cp -r . "$INSTALL_DIR/"
 
-mv netcalc-rs "$INSTALL_DIR/"
-
-cp -r assets "$INSTALL_DIR/"
-
-# Créer le lien symbolique
 mkdir -p "$BIN_DIR"
 ln -sf "$INSTALL_DIR/netcalc-rs" "$BIN_DIR/netcalc-rs"
+echo "[✔] Binaire installé : $BIN_DIR/netcalc-rs"
 
+# ── Intégration au système ───────────────────────────────────────────
+if [ "$OS" = "linux" ]; then
+  DESKTOP_DIR="$HOME/.local/share/applications"
+  ICON_DIR="$HOME/.local/share/icons"
+  mkdir -p "$DESKTOP_DIR" "$ICON_DIR"
+  if [ -f debian/netcalc-rs.desktop ]; then
+    install -Dm 644 debian/netcalc-rs.desktop "$DESKTOP_DIR/netcalc-rs.desktop"
+    echo "[✔] Entrée de menu ajoutée"
+  fi
+  if [ -f assets/images/netcalc-rs.png ]; then
+    install -Dm 644 assets/images/netcalc-rs.png "$ICON_DIR/netcalc-rs.png"
+    echo "[✔] Icône ajoutée"
+  fi
+elif [ "$OS" = "macos" ]; then
+  # Sur macOS, optionnel : copier l'icône
+  if [ -f assets/images/netcalc-rs.png ]; then
+    mkdir -p "$INSTALL_DIR"
+    cp assets/images/netcalc-rs.png "$INSTALL_DIR/icon.png"
+  fi
+  echo "[✔] NetCalc-rs prêt pour macOS"
+  echo "    Astuce : créez un alias dans /Applications avec :"
+  echo "    ln -sf $BIN_DIR/netcalc-rs /Applications/NetCalc-rs"
+fi
 
-mkdir -p "$DESKTOP_DIR" "$ICON_DIR"
-install -Dm 644 debian/netcalc-rs.desktop "$DESKTOP_DIR/netcalc-rs.desktop"
-install -Dm 644 assets/images/netcalc-rs.png "$ICON_DIR/netcalc-rs.png"
-echo "[+] Application ajoutée au menu"
-
-
-# Nettoyage
-echo "[-] Nettoyage 🧹"
+# ── Nettoyage ────────────────────────────────────────────────────────
 cd "$HOME"
-sudo rm -rf "$TMP_DIR"
+rm -rf "$TMP_DIR"
+echo "[✔] Installation terminée !"
 
-echo "[✔] Installation terminée ! Essayez : netcalc-rs"
-
-echo
-echo "[!] Pour exécuter 'netcalc-rs' depuis n'importe quel terminal, assurez-vous que '~/.local/bin' est dans votre PATH."
-echo "    Voici comment faire :"
-
+# ── Instructions PATH ────────────────────────────────────────────────
+echo ""
+echo "[!] Assurez-vous que ~/.local/bin est dans votre PATH :"
 case "$SHELL" in
-    *zsh)
-        echo "    echo 'export PATH=\$HOME/.local/bin:\$PATH' >> ~/.zshrc"
-        echo "    source ~/.zshrc"
-        ;;
-    *fish)
-        echo "    fish_add_path -U \$HOME/.local/bin"
-        ;;
-    *)
-        echo "    echo 'export PATH=\$HOME/.local/bin:\$PATH' >> ~/.bashrc"
-        echo "    source ~/.bashrc"
-        ;;
+  *zsh)  echo "    echo 'export PATH=\$HOME/.local/bin:\$PATH' >> ~/.zshrc && source ~/.zshrc" ;;
+  *fish) echo "    fish_add_path -U \$HOME/.local/bin" ;;
+  *)     echo "    echo 'export PATH=\$HOME/.local/bin:\$PATH' >> ~/.bashrc && source ~/.bashrc" ;;
 esac
-
-echo
-echo "[✓] Vous pouvez maintenant exécuter l'application avec : netcalc-rs"
+echo ""
+echo "[✓] Lancez : netcalc-rs"

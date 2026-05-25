@@ -3,12 +3,13 @@ name: Release Multi-plateforme
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
 
 jobs:
+  # ── LINUX ──────────────────────────────────────────────────────────
   build-linux:
     name: Build Linux (${{ matrix.target }})
     runs-on: ubuntu-latest
@@ -16,28 +17,27 @@ jobs:
       matrix:
         target: [x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu]
     steps:
-      - name: Checkout du code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Installer la toolchain Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
 
-      - name: Installer les dépendances GTK3/X11 (Cible x86_64 native)
+      - name: Dépendances (x86_64 natif)
         if: matrix.target == 'x86_64-unknown-linux-gnu'
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libglib2.0-dev libx11-dev libxdo-dev
 
-      - name: Installer QEMU et Cross (Cible ARM64 Cross-compilation)
+      - name: Dépendances (ARM64 cross)
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
           sudo apt-get update
           sudo apt-get install -y qemu-user-static
           cargo install cross --git https://github.com/cross-rs/cross.git
 
-      - name: Générer Cross.toml pour injecter les libs ARM64 dans le conteneur
+      - name: Cross.toml pour ARM64
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
           cat << 'EOF' > Cross.toml
@@ -47,7 +47,7 @@ jobs:
           ]
           EOF
 
-      - name: Compiler le binaire
+      - name: Compiler
         run: |
           if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
             cross build --release --target ${{ matrix.target }}
@@ -55,7 +55,7 @@ jobs:
             cargo build --release --target ${{ matrix.target }}
           fi
 
-      - name: Empaqueter l'artefact Linux (.tar.xz)
+      - name: Empaqueter (.tar.xz)
         run: |
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app/debian
@@ -65,23 +65,66 @@ jobs:
           archive="netcalc-rs-${VERSION}-${{ matrix.target }}.tar.xz"
           tar -cJf $archive app/
           sha256sum $archive > ${archive}.sha256
+          # Alias app.tar.xz pour le script d'install Linux
+          cp $archive app.tar.xz
+          cp ${archive}.sha256 app.tar.xz.sha256
 
-      - name: Téléverser l'artefact temporairement
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: linux-${{ matrix.target }}
           path: |
             netcalc-rs-*.tar.xz
             netcalc-rs-*.tar.xz.sha256
+            app.tar.xz
+            app.tar.xz.sha256
 
+  # ── macOS ──────────────────────────────────────────────────────────
+  build-macos:
+    name: Build macOS (${{ matrix.target }})
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        target: [aarch64-apple-darwin, x86_64-apple-darwin]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer la toolchain Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Dépendances Homebrew
+        run: |
+          brew install gtk+3 pkg-config
+
+      - name: Compiler
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Empaqueter (.tar.xz) — pas de debian/
+        run: |
+          VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+          mkdir -p app
+          cp target/${{ matrix.target }}/release/netcalc-rs app/
+          cp -r assets app/
+          archive="netcalc-rs-${VERSION}-${{ matrix.target }}.tar.xz"
+          tar -cJf $archive app/
+          shasum -a 256 $archive > ${archive}.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.target }}
+          path: |
+            netcalc-rs-*.tar.xz
+            netcalc-rs-*.tar.xz.sha256
+
+  # ── WINDOWS ────────────────────────────────────────────────────────
   build-windows:
-    name: Build Windows (x86_64-pc-windows-gnu)
+    name: Build Windows
     runs-on: windows-latest
     steps:
-      - name: Checkout du code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Configurer MSYS2, installer GCC, GTK3 et Rust (MinGW64)
+      - name: MSYS2 + dépendances
         uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -92,92 +135,64 @@ jobs:
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-rust
 
-      - name: Compiler le binaire sous l'environnement MSYS2
+      - name: Compiler
         shell: msys2 {0}
-        run: |
-          cargo build --release
+        run: cargo build --release
 
-      - name: Empaqueter l'artefact Windows (.zip)
+      - name: Empaqueter (.zip) — exe autonome + assets
         shell: msys2 {0}
         run: |
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app
           cp target/release/netcalc-rs.exe app/
           cp -r assets app/
-          archive="netcalc-rs-${VERSION}-x86_64-pc-windows-gnu.zip"
-          zip -r $archive app
-          sha256sum $archive > ${archive}.sha256
+          cd app
+          # Créer un script de lancement PowerShell
+          echo '@echo off
+          start "" "%~dp0netcalc-rs.exe"' > ../launch-netcalc.bat
+          cd ..
+          archive="netcalc-rs-${VERSION}-x86_64-windows.zip"
+          zip -r $archive app/ launch-netcalc.bat
+          # Alternative : exe seul pour ceux qui veulent du portable
+          cp target/release/netcalc-rs.exe netcalc-rs-${VERSION}-x86_64-windows.exe
+          certutil -hashfile netcalc-rs-${VERSION}-x86_64-windows.exe SHA256 > netcalc-rs-${VERSION}-x86_64-windows.exe.sha256
 
-      - name: Téléverser l'artefact temporairement
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: windows-x86_64
           path: |
             netcalc-rs-*.zip
             netcalc-rs-*.zip.sha256
+            netcalc-rs-*.exe
+            netcalc-rs-*.exe.sha256
 
-  build-macos:
-    name: Build macOS (x86_64-apple-darwin)
-    runs-on: macos-latest
-    steps:
-      - name: Checkout du code
-        uses: actions/checkout@v4
-
-      - name: Installer la toolchain Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-apple-darwin
-
-      - name: Installer GTK3 et Pkg-Config via Homebrew
-        run: |
-          brew install gtk+3 pkg-config
-
-      - name: Compiler le binaire Mac
-        run: cargo build --release --target x86_64-apple-darwin
-
-      - name: Empaqueter l'artefact Mac (.tar.xz)
-        run: |
-          VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
-          mkdir -p app
-          cp target/x86_64-apple-darwin/release/netcalc-rs app/
-          cp -r assets app/
-          archive="netcalc-rs-${VERSION}-x86_64-apple-darwin.tar.xz"
-          tar -cJf $archive app/
-          shasum -a 256 $archive > ${archive}.sha256
-
-      - name: Téléverser l'artefact temporairement
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-x86_64
-          path: |
-            netcalc-rs-*.tar.xz
-            netcalc-rs-*.tar.xz.sha256
-
+  # ── PUBLISH ─────────────────────────────────────────────────────────
   publish-release:
     name: Publier la GitHub Release
-    needs: [build-linux, build-windows, build-macos]
+    needs: [build-linux, build-macos, build-windows]
     runs-on: ubuntu-latest
     steps:
-      - name: Récupérer tous les artefacts des jobs précédents
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           path: artifacts
 
-      - name: Consolider les archives et générer le fichier sha256sums.txt
+      - name: Consolider les fichiers
         run: |
           mkdir -p release_files
-          find artifacts/ -type f \( -name "*.tar.xz" -o -name "*.zip" -o -name "*.sha256" \) -exec cp {} release_files/ \;
-          cd release_files
-          cat *.sha256 > sha256sums.txt
-          rm -f *.sha256
-          echo "==== Liste des fichiers à publier ===="
-          ls -lh
+          find artifacts/ -type f \( \
+            -name "*.tar.xz" -o -name "*.zip" -o -name "*.exe" \
+          \) -exec cp {} release_files/ \;
+          # Checksums consolidés
+          find artifacts/ -name "*.sha256" -exec cat {} \; > release_files/sha256sums.txt
+          # Alias app.tar.xz pour le script d'install Linux
+          first=$$(ls release_files/*linux*.tar.xz 2>/dev/null | head -1)
+          [ -n "$$first" ] && cp "$$first" release_files/app.tar.xz
+          echo "=== Fichiers publiés ==="
+          ls -lh release_files/
 
-      - name: Créer la release officielle sur GitHub et attacher les fichiers
-        uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v2
         with:
-          files: |
-            release_files/*
+          files: release_files/*
           tag_name: ${{ github.ref_name }}
           name: Version ${{ github.ref_name }}
           draft: false
