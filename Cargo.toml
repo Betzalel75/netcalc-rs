@@ -18,6 +18,12 @@ web = ["dioxus/web"]
 desktop = ["dioxus/desktop"]
 mobile = ["dioxus/mobile"]
 
+[application]
+name = "netcalc-rs"
+
+[bundle]
+identifier = "com.netcalcrs.app"
+
 [profile]
 
 [profile.wasm-dev]

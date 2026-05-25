@@ -74,7 +74,7 @@ jobs:
         if: matrix.target != 'aarch64-unknown-linux-gnu'
         run: |
             cargo install cargo-binstall
-            cargo binstall dioxus-cli
+            cargo binstall dioxus-cli@0.6.3
 
       - name: Compiler (build natif x86_64)
         if: matrix.target == 'x86_64-unknown-linux-gnu'
@@ -131,7 +131,7 @@ jobs:
       - name: Installer dioxus-cli
         run: |
             cargo install cargo-binstall
-            cargo binstall dioxus-cli
+            cargo binstall dioxus-cli@0.6.3
 
       - name: Compiler (dx bundle)
         run: dx bundle --release --platform desktop --target ${{ matrix.target }}
@@ -176,7 +176,7 @@ jobs:
         shell: msys2 {0}
         run: |
             cargo install cargo-binstall
-            cargo binstall dioxus-cli
+            cargo binstall dioxus-cli@0.6.3
 
       - name: Compiler (dx bundle)
         shell: msys2 {0}
