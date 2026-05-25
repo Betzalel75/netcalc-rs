@@ -8,8 +8,9 @@ TMP_DIR="$HOME/.tmp/netcalc-rs-install"
 INSTALL_DIR="$HOME/.local/netcalc-rs.app"
 BIN_DIR="$HOME/.local/bin"
 
-# Détection de l'OS
+# Détection de l'OS et de l'architecture
 OS="$(uname -s)"
+ARCH="$(uname -m)"
 case "$OS" in
   Linux)   OS="linux" ;;
   Darwin)  OS="macos"  ;;
@@ -20,7 +21,17 @@ case "$OS" in
     ;;
 esac
 
-echo "[*] Système détecté : $OS"
+# Mapper l'architecture vers le suffixe des releases
+case "$ARCH" in
+  x86_64|amd64)  ARCH_SUFFIX="x86_64" ;;
+  aarch64|arm64) ARCH_SUFFIX="aarch64" ;;
+  *)
+    echo "[-] Architecture non supportée : $ARCH"
+    exit 1
+    ;;
+esac
+
+echo "[*] Système détecté : $OS / $ARCH"
 
 # ── Dépendances système ──────────────────────────────────────────────
 echo "[*] Vérification des dépendances"
@@ -41,32 +52,25 @@ echo "[*] Téléchargement de NetCalc-rs ($VERSION)"
 mkdir -p "$TMP_DIR"
 cd "$TMP_DIR"
 
-if [ "$VERSION" = "latest" ]; then
-  # API GitHub → filtrer par OS
-  if [ "$OS" = "macos" ]; then
-    # Prend l'archive macOS (Apple Silicon si dispo, sinon Intel)
-    RELEASE_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" \
-      | grep "browser_download_url" \
-      | grep 'apple-darwin\.tar\.xz' \
-      | head -1 \
-      | cut -d '"' -f 4)
-  else
-    RELEASE_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" \
-      | grep "browser_download_url" \
-      | grep 'linux.*\.tar\.xz' \
-      | head -1 \
-      | cut -d '"' -f 4)
-  fi
+# Construction de l'URL de téléchargement
+if [ "$OS" = "macos" ]; then
+  TARGET="$ARCH_SUFFIX-apple-darwin"
 else
-  if [ "$OS" = "macos" ]; then
-    RELEASE_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/tags/$VERSION" \
-      | grep "browser_download_url" \
-      | grep 'apple-darwin\.tar\.xz' \
-      | head -1 \
-      | cut -d '"' -f 4)
-  else
-    RELEASE_URL="https://github.com/$REPO/releases/download/$VERSION/app.tar.xz"
-  fi
+  TARGET="$ARCH_SUFFIX-unknown-linux-gnu"
+fi
+
+if [ "$VERSION" = "latest" ]; then
+  RELEASE_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" \
+    | grep "browser_download_url" \
+    | grep "$TARGET\.tar\.xz" \
+    | head -1 \
+    | cut -d '"' -f 4)
+else
+  RELEASE_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/tags/$VERSION" \
+    | grep "browser_download_url" \
+    | grep "$TARGET\.tar\.xz" \
+    | head -1 \
+    | cut -d '"' -f 4)
 fi
 
 if [ -z "$RELEASE_URL" ]; then
