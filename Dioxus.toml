@@ -5,6 +5,7 @@ default_icon = "assets/netcalc-rs.ico"
 [bundle]
 identifier = "com.netcalcrs.app"
 publisher = "Betzalel75"
+icon = ["assets/netcalc-rs.ico"]
 
 [web.app]
 
