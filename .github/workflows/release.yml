@@ -14,6 +14,7 @@ jobs:
     name: Build Linux (${{ matrix.target }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false # Évite qu'un échec sur x86_64 n'annule l'ARM64
       matrix:
         target: [x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu]
     steps:
@@ -28,12 +29,7 @@ jobs:
         if: matrix.target == 'x86_64-unknown-linux-gnu'
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            libgtk-3-dev libglib2.0-dev \
-            libx11-dev libxdo-dev \
-            libwebkit2gtk-4.1-dev \
-            libjavascriptcoregtk-4.1-dev \
-            libsoup-3.0-dev
+          sudo apt-get install -y libgtk-3-dev libglib2.0-dev libx11-dev libxdo-dev libjavascriptcoregtk-4.1-dev
 
       - name: Dépendances (ARM64 cross)
         if: matrix.target == 'aarch64-unknown-linux-gnu'
@@ -48,29 +44,17 @@ jobs:
           cat << 'EOF' > Cross.toml
           [target.aarch64-unknown-linux-gnu]
           pre-build = [
-              "dpkg --add-architecture arm64 && \
-               apt-get update && \
-               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --assume-yes \
-                 libglib2.0-dev:arm64 \
-                 libgtk-3-dev:arm64 \
-                 libx11-dev:arm64 \
-                 libxdo-dev:arm64 \
-                 libwebkit2gtk-4.1-dev:arm64 \
-                 libjavascriptcoregtk-4.1-dev:arm64 \
-                 libsoup-3.0-dev:arm64"
+              "dpkg --add-architecture arm64 && apt-get update && apt-get install --no-install-recommends --assume-yes libglib2.0-dev:arm64 libgtk-3-dev:arm64 libx11-dev:arm64 libxdo-dev:arm64 libjavascriptcoregtk-4.1-dev:arm64"
           ]
           EOF
 
-      - name: Compiler (ARM64)
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
+      - name: Compiler
         run: |
-          cross build --release --target aarch64-unknown-linux-gnu
-        timeout-minutes: 60
-
-      - name: Compiler (x86_64 natif)
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
-        run: |
-          cargo build --release --target x86_64-unknown-linux-gnu
+          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
+            cross build --release --target ${{ matrix.target }}
+          else
+            cargo build --release --target ${{ matrix.target }}
+          fi
 
       - name: Empaqueter (.tar.xz)
         run: |
@@ -100,6 +84,7 @@ jobs:
     name: Build macOS (${{ matrix.target }})
     runs-on: macos-latest
     strategy:
+      fail-fast: false
       matrix:
         target: [aarch64-apple-darwin, x86_64-apple-darwin]
     steps:
@@ -151,32 +136,29 @@ jobs:
             mingw-w64-x86_64-pkg-config
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-rust
+            zip
 
       - name: Compiler
         shell: msys2 {0}
         run: cargo build --release
 
       - name: Empaqueter (.zip) — exe autonome + assets
-        shell: pwsh
+        shell: msys2 {0}
         run: |
-          # Extraire la version de Cargo.toml
-          $$match = Select-String -Path Cargo.toml -Pattern '^version = "(.+)"'
-          $$VERSION = $$match.Matches.Groups[1].Value
-          Write-Host "Version: $$VERSION"
-          New-Item -ItemType Directory -Path app -Force | Out-Null
-          Copy-Item target/release/netcalc-rs.exe app/
-          Copy-Item -Recurse assets app/
-          # Script de lancement
-          '@echo off
-          start "" "%~dp0netcalc-rs.exe"' | Out-File -FilePath launch-netcalc.bat -Encoding ASCII
-          # ZIP
-          $$archive = "netcalc-rs-$$VERSION-x86_64-windows.zip"
-          Compress-Archive -Path app, launch-netcalc.bat -DestinationPath $$archive
-          # Exe seul (portable)
-          Copy-Item target/release/netcalc-rs.exe "netcalc-rs-$$VERSION-x86_64-windows.exe"
-          # SHA256 du .exe
-          $$hash = Get-FileHash "netcalc-rs-$$VERSION-x86_64-windows.exe" -Algorithm SHA256
-          "$$($$hash.Hash.ToLower())  netcalc-rs-$$VERSION-x86_64-windows.exe" | Out-File -FilePath "netcalc-rs-$$VERSION-x86_64-windows.exe.sha256" -Encoding ASCII
+          VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+          mkdir -p app
+          cp target/release/netcalc-rs.exe app/
+          cp -r assets app/
+          cd app
+          # Créer un script de lancement PowerShell
+          echo '@echo off
+          start "" "%~dp0netcalc-rs.exe"' > ../launch-netcalc.bat
+          cd ..
+          archive="netcalc-rs-${VERSION}-x86_64-windows.zip"
+          zip -r $archive app/ launch-netcalc.bat
+          # Alternative : exe seul pour ceux qui veulent du portable
+          cp target/release/netcalc-rs.exe netcalc-rs-${VERSION}-x86_64-windows.exe
+          certutil -hashfile netcalc-rs-${VERSION}-x86_64-windows.exe SHA256 > netcalc-rs-${VERSION}-x86_64-windows.exe.sha256
 
       - uses: actions/upload-artifact@v4
         with:
