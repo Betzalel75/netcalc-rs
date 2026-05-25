@@ -1,4 +1,8 @@
 [application]
+name = "netcalc-rs"
+
+[bundle]
+identifier = "com.netcalcrs.app"
 
 [web.app]
 
