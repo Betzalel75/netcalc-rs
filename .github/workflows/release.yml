@@ -208,9 +208,9 @@ jobs:
       - name: Consolider les fichiers
         run: |
           mkdir -p release_files
-          find artifacts/ -type f \( \
-            -name "*.tar.xz" -o -name "*.zip" -o -name "*.exe" \
-          \) -exec cp {} release_files/ \;
+          for ext in tar.xz zip exe; do
+            find artifacts/ -type f -name "*.$$ext" -exec cp {} release_files/ \;
+          done
           # Checksums consolidés
           find artifacts/ -name "*.sha256" -exec cat {} \; > release_files/sha256sums.txt
           # Alias app.tar.xz pour le script d'install Linux
