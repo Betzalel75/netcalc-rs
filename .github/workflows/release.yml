@@ -37,10 +37,9 @@ jobs:
           sudo apt-get update
           cargo install cross --git https://github.com/cross-rs/cross.git
 
-      - name: Configurer Cross via Cross.toml et Dockerfile pour ARM64
+      - name: Configurer Cross pour ARM64
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
-          # 1. Générer un Dockerfile basé sur Ubuntu 22.04 incluant build-essential (pour le linker cc) et webkit2gtk
           cat << 'EOF' > Cross.Dockerfile
           FROM ubuntu:22.04
           ENV DEBIAN_FRONTEND=noninteractive
@@ -66,32 +65,38 @@ jobs:
               PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig/ \
               PKG_CONFIG_ALLOW_CROSS=1
           EOF
-
-          # 2. Lier ce Dockerfile à la cible ARM64 dans Cross.toml
           cat << 'EOF' > Cross.toml
           [target.aarch64-unknown-linux-gnu]
           dockerfile = "Cross.Dockerfile"
           EOF
 
-      - name: Compiler
-        run: |
-          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
-            cross build --release --target ${{ matrix.target }}
-          else
-            cargo build --release --target ${{ matrix.target }}
-          fi
+      - name: Installer dioxus-cli (builds natifs uniquement)
+        if: matrix.target != 'aarch64-unknown-linux-gnu'
+        run: cargo install dioxus-cli
+
+      - name: Compiler (build natif x86_64)
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: dx bundle --release --platform desktop
+
+      - name: Compiler (cross ARM64)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: cross build --release --target aarch64-unknown-linux-gnu
 
       - name: Empaqueter (.tar.xz)
         run: |
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app/debian
-          cp target/${{ matrix.target }}/release/netcalc-rs app/
-          cp -r assets app/
+          if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
+            # dx bundle a tout mis dans target/dx/netcalc-rs/release/desktop/
+            cp -r target/dx/netcalc-rs/release/desktop/* app/
+          else
+            cp target/${{ matrix.target }}/release/netcalc-rs app/
+            cp -r assets app/
+          fi
           cp debian/netcalc-rs.desktop app/debian/
           archive="netcalc-rs-${VERSION}-${{ matrix.target }}.tar.xz"
           tar -cJf $archive app/
           sha256sum $archive > ${archive}.sha256
-          # Alias app.tar.xz pour le script d'install Linux
           cp $archive app.tar.xz
           cp ${archive}.sha256 app.tar.xz.sha256
 
@@ -114,25 +119,24 @@ jobs:
         target: [aarch64-apple-darwin, x86_64-apple-darwin]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Installer la toolchain Rust
-        uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
 
       - name: Dépendances Homebrew
-        run: |
-          brew install gtk+3 pkg-config libsoup
+        run: brew install gtk+3 pkg-config libsoup
 
-      - name: Compiler
-        run: cargo build --release --target ${{ matrix.target }}
+      - name: Installer dioxus-cli
+        run: cargo install dioxus-cli
 
-      - name: Empaqueter (.tar.xz) — pas de debian/
+      - name: Compiler (dx bundle)
+        run: dx bundle --release --platform desktop --target ${{ matrix.target }}
+
+      - name: Empaqueter (.tar.xz)
         run: |
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app
-          cp target/${{ matrix.target }}/release/netcalc-rs app/
-          cp -r assets app/
+          cp -r target/dx/netcalc-rs/release/desktop/* app/
           archive="netcalc-rs-${VERSION}-${{ matrix.target }}.tar.xz"
           tar -cJf $archive app/
           shasum -a 256 $archive > ${archive}.sha256
@@ -164,26 +168,25 @@ jobs:
             mingw-w64-x86_64-libsoup3
             zip
 
-      - name: Compiler
+      - name: Installer dioxus-cli (dans MSYS2)
         shell: msys2 {0}
-        run: cargo build --release
+        run: cargo install dioxus-cli
 
-      - name: Empaqueter (.zip) — exe autonome + assets
+      - name: Compiler (dx bundle)
+        shell: msys2 {0}
+        run: dx bundle --release --platform desktop --target x86_64-pc-windows-gnu
+
+      - name: Empaqueter (.zip)
         shell: msys2 {0}
         run: |
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app
-          cp target/release/netcalc-rs.exe app/
-          cp -r assets app/
-          cd app
-          # Créer un script de lancement PowerShell
+          cp -r target/dx/netcalc-rs/release/desktop/* app/
           echo '@echo off
-          start "" "%~dp0netcalc-rs.exe"' > ../launch-netcalc.bat
-          cd ..
+          start "" "%~dp0netcalc-rs.exe"' > launch-netcalc.bat
           archive="netcalc-rs-${VERSION}-x86_64-windows.zip"
           zip -r $archive app/ launch-netcalc.bat
-          # Alternative : exe seul pour ceux qui veulent du portable
-          cp target/release/netcalc-rs.exe netcalc-rs-${VERSION}-x86_64-windows.exe
+          cp target/dx/netcalc-rs/release/desktop/netcalc-rs.exe netcalc-rs-${VERSION}-x86_64-windows.exe
           certutil -hashfile netcalc-rs-${VERSION}-x86_64-windows.exe SHA256 > netcalc-rs-${VERSION}-x86_64-windows.exe.sha256
 
       - uses: actions/upload-artifact@v4
@@ -191,9 +194,8 @@ jobs:
           name: windows-x86_64
           path: |
             netcalc-rs-*.zip
-            netcalc-rs-*.zip.sha256
             netcalc-rs-*.exe
-            netcalc-rs-*.exe.sha256
+            netcalc-rs-*.sha256
 
   # ── PUBLISH ─────────────────────────────────────────────────────────
   publish-release:
@@ -208,12 +210,8 @@ jobs:
       - name: Consolider les fichiers
         run: |
           mkdir -p release_files
-          find artifacts/ -type f \( \
-            -name "*.tar.xz" -o -name "*.zip" -o -name "*.exe" \
-          \) -exec cp {} release_files/ \;
-          # Checksums consolidés
+          find artifacts/ -type f \( -name "*.tar.xz" -o -name "*.zip" -o -name "*.exe" \) -exec cp {} release_files/ \;
           find artifacts/ -name "*.sha256" -exec cat {} \; > release_files/sha256sums.txt
-          # Alias app.tar.xz pour le script d'install Linux
           first=$(ls release_files/*linux*.tar.xz 2>/dev/null | head -1)
           [ -n "$first" ] && cp "$first" release_files/app.tar.xz
           echo "=== Fichiers publiés ==="
