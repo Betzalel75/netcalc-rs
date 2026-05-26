@@ -2,10 +2,8 @@ name: Release Multi-plateforme
 
 on:
   push:
-    branches:
-      - main
-    # tags:
-    #   - "v*"
+    tags:
+      - "v*"
 
 permissions:
   contents: write
@@ -39,9 +37,10 @@ jobs:
           sudo apt-get update
           cargo install cross --git https://github.com/cross-rs/cross.git
 
-      - name: Configurer Cross pour ARM64
+      - name: Configurer Cross via Cross.toml et Dockerfile pour ARM64
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
+          # 1. Générer un Dockerfile basé sur Ubuntu 22.04 incluant build-essential (pour le linker cc) et webkit2gtk
           cat << 'EOF' > Cross.Dockerfile
           FROM ubuntu:22.04
           ENV DEBIAN_FRONTEND=noninteractive
@@ -67,40 +66,32 @@ jobs:
               PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig/ \
               PKG_CONFIG_ALLOW_CROSS=1
           EOF
+
+          # 2. Lier ce Dockerfile à la cible ARM64 dans Cross.toml
           cat << 'EOF' > Cross.toml
           [target.aarch64-unknown-linux-gnu]
           dockerfile = "Cross.Dockerfile"
           EOF
 
-      - name: Installer dioxus-cli (builds natifs uniquement)
-        if: matrix.target != 'aarch64-unknown-linux-gnu'
+      - name: Compiler
         run: |
-            cargo install cargo-binstall
-            cargo binstall dioxus-cli@0.6.3
-
-      - name: Compiler (build natif x86_64)
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
-        run: dx bundle --release --platform desktop
-
-      - name: Compiler (cross ARM64)
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: cross build --release --target aarch64-unknown-linux-gnu
+          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
+            cross build --release --target ${{ matrix.target }}
+          else
+            cargo build --release --target ${{ matrix.target }}
+          fi
 
       - name: Empaqueter (.tar.xz)
         run: |
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app/debian
-          if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
-            # dx bundle a tout mis dans target/dx/netcalc-rs/release/desktop/
-            cp -r target/dx/netcalc-rs/release/desktop/* app/
-          else
-            cp target/${{ matrix.target }}/release/netcalc-rs app/
-            cp -r assets app/
-          fi
+          cp target/${{ matrix.target }}/release/netcalc-rs app/
+          cp -r assets app/
           cp debian/netcalc-rs.desktop app/debian/
           archive="netcalc-rs-${VERSION}-${{ matrix.target }}.tar.xz"
           tar -cJf $archive app/
           sha256sum $archive > ${archive}.sha256
+          # Alias app.tar.xz pour le script d'install Linux
           cp $archive app.tar.xz
           cp ${archive}.sha256 app.tar.xz.sha256
 
@@ -123,26 +114,25 @@ jobs:
         target: [aarch64-apple-darwin, x86_64-apple-darwin]
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Installer la toolchain Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
 
       - name: Dépendances Homebrew
-        run: brew install gtk+3 pkg-config libsoup
-
-      - name: Installer dioxus-cli
         run: |
-            cargo install cargo-binstall
-            cargo binstall dioxus-cli@0.6.3
+          brew install gtk+3 pkg-config libsoup
 
-      - name: Compiler (dx bundle)
-        run: dx bundle --release --platform desktop --target ${{ matrix.target }}
+      - name: Compiler
+        run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Empaqueter (.tar.xz)
+      - name: Empaqueter (.tar.xz) — pas de debian/
         run: |
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app
-          cp -r target/dx/netcalc-rs/release/desktop/* app/
+          cp target/${{ matrix.target }}/release/netcalc-rs app/
+          cp -r assets app/
           archive="netcalc-rs-${VERSION}-${{ matrix.target }}.tar.xz"
           tar -cJf $archive app/
           shasum -a 256 $archive > ${archive}.sha256
@@ -174,27 +164,26 @@ jobs:
             mingw-w64-x86_64-libsoup3
             zip
 
-      - name: Installer dioxus-cli (dans MSYS2)
+      - name: Compiler
         shell: msys2 {0}
-        run: |
-            cargo install cargo-binstall
-            cargo binstall dioxus-cli@0.6.3
+        run: cargo build --release
 
-      - name: Compiler (dx bundle)
-        shell: msys2 {0}
-        run: dx bundle --release --platform desktop --target x86_64-pc-windows-gnu
-
-      - name: Empaqueter (.zip)
+      - name: Empaqueter (.zip) — exe autonome + assets
         shell: msys2 {0}
         run: |
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app
-          cp -r target/dx/netcalc-rs/release/desktop/* app/
+          cp target/release/netcalc-rs.exe app/
+          cp -r assets app/
+          cd app
+          # Créer un script de lancement PowerShell
           echo '@echo off
-          start "" "%~dp0netcalc-rs.exe"' > launch-netcalc.bat
+          start "" "%~dp0netcalc-rs.exe"' > ../launch-netcalc.bat
+          cd ..
           archive="netcalc-rs-${VERSION}-x86_64-windows.zip"
           zip -r $archive app/ launch-netcalc.bat
-          cp target/dx/netcalc-rs/release/desktop/netcalc-rs.exe netcalc-rs-${VERSION}-x86_64-windows.exe
+          # Alternative : exe seul pour ceux qui veulent du portable
+          cp target/release/netcalc-rs.exe netcalc-rs-${VERSION}-x86_64-windows.exe
           certutil -hashfile netcalc-rs-${VERSION}-x86_64-windows.exe SHA256 > netcalc-rs-${VERSION}-x86_64-windows.exe.sha256
 
       - uses: actions/upload-artifact@v4
@@ -202,35 +191,67 @@ jobs:
           name: windows-x86_64
           path: |
             netcalc-rs-*.zip
+            netcalc-rs-*.zip.sha256
             netcalc-rs-*.exe
-            netcalc-rs-*.sha256
+            netcalc-rs-*.exe.sha256
 
   # ── PUBLISH ─────────────────────────────────────────────────────────
-  # publish-release:
-  #   name: Publier la GitHub Release
-  #   needs: [build-linux, build-macos, build-windows]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/download-artifact@v4
-  #       with:
-  #         path: artifacts
+  publish-release:
+    name: Publier la GitHub Release
+    needs: [build-linux, build-macos, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
 
-  #     - name: Consolider les fichiers
-  #       run: |
-  #         mkdir -p release_files
-  #         find artifacts/ -type f \( -name "*.tar.xz" -o -name "*.zip" -o -name "*.exe" \) -exec cp {} release_files/ \;
-  #         find artifacts/ -name "*.sha256" -exec cat {} \; > release_files/sha256sums.txt
-  #         first=$(ls release_files/*linux*.tar.xz 2>/dev/null | head -1)
-  #         [ -n "$first" ] && cp "$first" release_files/app.tar.xz
-  #         echo "=== Fichiers publiés ==="
-  #         ls -lh release_files/
+      - name: Consolider les fichiers
+        run: |
+          mkdir -p release_files
+          find artifacts/ -type f \( \
+            -name "*.tar.xz" -o -name "*.zip" -o -name "*.exe" \
+          \) -exec cp {} release_files/ \;
+          # Checksums consolidés
+          find artifacts/ -name "*.sha256" -exec cat {} \; > release_files/sha256sums.txt
+          # Alias app.tar.xz pour le script d'install Linux
+          first=$(ls release_files/*linux*.tar.xz 2>/dev/null | head -1)
+          [ -n "$first" ] && cp "$first" release_files/app.tar.xz
+          echo "=== Fichiers publiés ==="
+          ls -lh release_files/
 
-  #     - uses: softprops/action-gh-release@v2
-  #       with:
-  #         files: release_files/*
-  #         tag_name: ${{ github.ref_name }}
-  #         name: Version ${{ github.ref_name }}
-  #         draft: false
-  #         prerelease: false
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Générer la description de la release
+        run: |
+          cat << 'EOF' > release_files/release_notes.md
+          ## 🧮 netcalc-rs – Full-featured IPv4 Network Calculator
+          
+          A modern, fast, cross-platform network calculator built with Rust and a Dioxus UI.
+          
+          ### ⚙️ Core Features
+          - **Full address analysis**: network, broadcast, mask, wildcard, IP ranges, host count, binary/hex conversions
+          - **10 built-in tools**: IP range, mask from hosts, broadcast, host count, FLSM subnetting, VLSM, route summarization, IP membership check, wildcard mask, format converter
+          - **Help & reference**: complete CIDR table, RFC 1918 private ranges, interactive educational widgets (binary AND animation, subnetting walkthrough…)
+          
+          ### 🎨 User Interface
+          - Auto light/dark theme + manual toggle
+          - Interactive binary grid (32 coloured tiles highlighting network vs host bits)
+          - One-click copy for every value (📋)
+          - Visual input validation, French error messages
+          - Responsive design with glassmorphism and smooth animations
+          
+          ### 🔧 Technical Highlights
+          - Unit-tested core engine (`NetAddress`) with 19 tests covering edge cases (/31, /32, VLSM, summarization, wildcard…)
+          - Flexible input parsing: accepts `192.168.1.0/24`, `10.0.0.1 255.0.0.0`, `172.16.0.1/255.255.0.0`
+          - Binaries available for **Linux** (x86_64, ARM64), **macOS** (Intel, Apple Silicon) and **Windows**
+          - Entire project in French (messages, UI, documentation)
+          EOF
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release_files/*
+          tag_name: ${{ github.ref_name }}
+          name: Version ${{ github.ref_name }}
+          body_path: release_files/release_notes.md 
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
