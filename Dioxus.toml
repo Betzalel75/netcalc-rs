@@ -18,10 +18,10 @@ title = "netcalc-rs"
 [web.resource]
 
 # Additional CSS style files
-style = []
+style = ["assets/"]
 
 # Additional JavaScript files
-script = []
+script = ["assets/js/index.js"]
 
 [web.resource.dev]
 

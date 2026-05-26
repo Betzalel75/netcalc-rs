@@ -2,16 +2,17 @@ NAME=netcalc-rs
 VERSION=$(shell grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
 UNAME_M=$(shell uname -m)
 UNAME_S=$(shell uname -s | tr A-Z a-z)
+export CARGO_BUILD_JOBS=4
 
 # Compilation uniquement
 build:
-	cargo build --release
+	dx bundle --release --platform desktop
 
 # Compilation + archive tar.xz prête à déployer
 release-local: build
 	rm -rf app _build
 	mkdir -p app
-	cp target/release/$(NAME) app/
+	cp target/dx/$(NAME)/bundle/$(UNAME_S)/appimage/$(NAME)_$(VERSION)_$(UNAME_M).AppImage app/
 	cp -r assets app/
 	mkdir -p _build
 	archive="$(NAME)-$(VERSION)-$(UNAME_S)-$(UNAME_M).tar.xz"

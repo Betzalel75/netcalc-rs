@@ -10,7 +10,7 @@ description = "Calculateur graphique d'adressage IP en Rust avec Dioxus"
 
 [dependencies]
 dark-light = "2.0.0"
-dioxus = { version = "0.6.0", features = [] }
+dioxus = { version = "0.7.9", features = [] }
 
 [features]
 default = ["desktop"]
