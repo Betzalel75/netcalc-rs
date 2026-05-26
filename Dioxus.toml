@@ -7,8 +7,6 @@ identifier = "com.netcalcrs.app"
 publisher = "Betzalel75"
 icon = ["assets/icon.png"]
 
-formats = ["deb", "rpm"]
-
 [web.app]
 
 # HTML title tag content
