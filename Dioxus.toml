@@ -1,11 +1,11 @@
 [application]
 name = "netcalc-rs"
-default_icon = "assets/netcalc-rs.ico"
+default_icon = "assets/icon.png"
 
 [bundle]
 identifier = "com.netcalcrs.app"
 publisher = "Betzalel75"
-icon = ["assets/netcalc-rs.ico"]
+icon = ["assets/icon.png"]
 
 [web.app]
 
