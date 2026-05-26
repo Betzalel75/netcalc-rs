@@ -91,9 +91,10 @@ jobs:
       - name: Empaqueter (.tar.xz)
         run: |
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
-          mkdir -p app/debian
+          mkdir -p app/debian app/assets
           if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
             cp target/dx/netcalc-rs/bundle/linux/appimage/*.AppImage app/
+            cp assets/icon.png app/assets/icon.png
           else
             cp target/${{ matrix.target }}/release/netcalc-rs app/
             cp -r assets app/
@@ -140,7 +141,7 @@ jobs:
 
       - name: Compiler (dx bundle)
         run: dx bundle --release --platform desktop --target ${{ matrix.target }}
-      
+
       - name: Empaqueter (.tar.xz)
         run: |
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
@@ -157,7 +158,7 @@ jobs:
             netcalc-rs-*.tar.xz
             netcalc-rs-*.tar.xz.sha256
 
-# ── WINDOWS ────────────────────────────────────────────────────────
+  # ── WINDOWS ────────────────────────────────────────────────────────
   build-windows:
     name: Build Windows
     runs-on: windows-latest
@@ -183,26 +184,26 @@ jobs:
         run: |
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app
-          
+
           EXE_PATH=$(find target -type f -name "netcalc-rs.exe" | grep "release" | grep -v "deps" | head -n 1)
-          
+
           if [ -z "$EXE_PATH" ]; then
             echo "Erreur : netcalc-rs.exe est introuvable !"
             exit 1
           fi
-          
+
           echo "Exécutable trouvé à : $EXE_PATH"
           cp "$EXE_PATH" app/
-          
+
           echo '@echo off
           start "" "%~dp0netcalc-rs.exe"' > launch-netcalc.bat
-          
+
           archive="netcalc-rs-${VERSION}-x86_64-windows.zip"
           7z a $archive app/ launch-netcalc.bat
-          
+
           cp app/netcalc-rs.exe netcalc-rs-${VERSION}-x86_64-windows.exe
           sha256sum netcalc-rs-${VERSION}-x86_64-windows.exe > netcalc-rs-${VERSION}-x86_64-windows.exe.sha256
-          
+
           INSTALLER_PATH=$(find target/dx/netcalc-rs/bundle/windows/nsis -type f -name "*-setup.exe" | head -n 1)
           if [ -n "$INSTALLER_PATH" ]; then
             echo "Installeur trouvé à : $INSTALLER_PATH"
@@ -246,21 +247,21 @@ jobs:
         run: |
           cat << 'EOF' > release_files/release_notes.md
           ## 🧮 netcalc-rs – Full-featured IPv4 Network Calculator
-          
+
           A modern, fast, cross-platform network calculator built with Rust and a Dioxus UI.
-          
+
           ### ⚙️ Core Features
           - **Full address analysis**: network, broadcast, mask, wildcard, IP ranges, host count, binary/hex conversions
           - **10 built-in tools**: IP range, mask from hosts, broadcast, host count, FLSM subnetting, VLSM, route summarization, IP membership check, wildcard mask, format converter
           - **Help & reference**: complete CIDR table, RFC 1918 private ranges, interactive educational widgets (binary AND animation, subnetting walkthrough…)
-          
+
           ### 🎨 User Interface
           - Auto light/dark theme + manual toggle
           - Interactive binary grid (32 coloured tiles highlighting network vs host bits)
           - One-click copy for every value (📋)
           - Visual input validation, French error messages
           - Responsive design with glassmorphism and smooth animations
-          
+
           ### 🔧 Technical Highlights
           - Unit-tested core engine (`NetAddress`) with 19 tests covering edge cases (/31, /32, VLSM, summarization, wildcard…)
           - Flexible input parsing: accepts `192.168.1.0/24`, `10.0.0.1 255.0.0.0`, `172.16.0.1/255.255.0.0`
@@ -273,7 +274,7 @@ jobs:
           files: release_files/*
           tag_name: ${{ github.ref_name }}
           name: Version ${{ github.ref_name }}
-          body_path: release_files/release_notes.md 
+          body_path: release_files/release_notes.md
           draft: false
           prerelease: false
         env:

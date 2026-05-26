@@ -85,9 +85,9 @@ mkdir -p "$BIN_DIR"
 if [ "$OS" = "linux" ]; then
   echo "[-] Installation sous Linux..."
   mkdir -p "$INSTALL_DIR"
-  
+
   APPIMAGE=$(find . -maxdepth 1 -name "*.AppImage" | head -1)
-  
+
   if [ -n "$APPIMAGE" ]; then
     echo "[-] AppImage détecté ($ARCH_SUFFIX)"
     cp "$APPIMAGE" "$INSTALL_DIR/netcalc-rs.AppImage"
@@ -105,16 +105,16 @@ elif [ "$OS" = "macos" ]; then
   echo "[-] Installation sous macOS..."
   MAC_APP_DIR="$HOME/Applications"
   mkdir -p "$MAC_APP_DIR"
-  
+
   APP_BUNDLE=$(find . -maxdepth 1 -type d -name "*.app" | head -1)
-  
+
   if [ -n "$APP_BUNDLE" ]; then
     BUNDLE_NAME=$(basename "$APP_BUNDLE")
     echo "[-] Bundle macOS détecté : $BUNDLE_NAME"
-    
+
     rm -rf "${MAC_APP_DIR:?}/${BUNDLE_NAME:?}"
     cp -R "$APP_BUNDLE" "$MAC_APP_DIR/"
-    
+
     ln -sf "$MAC_APP_DIR/$BUNDLE_NAME/Contents/MacOS/netcalc-rs" "$BIN_DIR/netcalc-rs"
     echo "[✔] Application installée dans : $MAC_APP_DIR/$BUNDLE_NAME"
   else
@@ -127,15 +127,15 @@ if [ "$OS" = "linux" ]; then
   DESKTOP_DIR="$HOME/.local/share/applications"
   ICON_DIR="$HOME/.local/share/icons"
   mkdir -p "$DESKTOP_DIR" "$ICON_DIR"
-  
+
   if [ -f debian/netcalc-rs.desktop ]; then
     sed -i "s|^Exec=.*|Exec=$BIN_DIR/netcalc-rs|" debian/netcalc-rs.desktop
     install -Dm 644 debian/netcalc-rs.desktop "$DESKTOP_DIR/netcalc-rs.desktop"
     echo "[✔] Entrée de menu ajoutée"
   fi
-  
-  if [ -f assets/images/netcalc-rs.png ]; then
-    install -Dm 644 assets/images/netcalc-rs.png "$ICON_DIR/netcalc-rs.png"
+
+  if [ -f assets/icon.png ]; then
+    install -Dm 644 assets/icon.png "$ICON_DIR/netcalc-rs.png"
     echo "[✔] Icône ajoutée"
   fi
 fi
