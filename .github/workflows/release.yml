@@ -182,27 +182,35 @@ jobs:
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app
           
-          # dx place l'exécutable dans le dossier release/desktop
-          cp target/dx/netcalc-rs/release/desktop/netcalc-rs.exe app/
+          # 1. Trouver automatiquement l'exécutable (.exe) en ignorant le dossier de dépendances (deps)
+          EXE_PATH=$(find target -type f -name "netcalc-rs.exe" | grep "release" | grep -v "deps" | head -n 1)
           
+          if [ -z "$EXE_PATH" ]; then
+            echo "Erreur : netcalc-rs.exe est introuvable !"
+            exit 1
+          fi
+          
+          echo "Exécutable trouvé à : $EXE_PATH"
+          cp "$EXE_PATH" app/
+          
+          # 2. Créer le script de lancement
           echo '@echo off
           start "" "%~dp0netcalc-rs.exe"' > launch-netcalc.bat
           
+          # 3. Créer le fichier ZIP
           archive="netcalc-rs-${VERSION}-x86_64-windows.zip"
           zip -r $archive app/ launch-netcalc.bat
           
+          # 4. Préparer l'exécutable seul pour l'artifact et générer son SHA256
           cp app/netcalc-rs.exe netcalc-rs-${VERSION}-x86_64-windows.exe
-          
-          # Git Bash sous Windows utilise sha256sum au lieu de certutil
           sha256sum netcalc-rs-${VERSION}-x86_64-windows.exe > netcalc-rs-${VERSION}-x86_64-windows.exe.sha256
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: windows-x86_64
-          path: |
-            netcalc-rs-*.zip
-            netcalc-rs-*.exe
-            netcalc-rs-*.sha256
+          
+          # Bonus : Si dx bundle a généré un installeur MSI, on le récupère aussi !
+          MSI_PATH=$(find target/dx -type f -name "*.msi" | head -n 1)
+          if [ -n "$MSI_PATH" ]; then
+            echo "Installeur MSI trouvé à : $MSI_PATH"
+            cp "$MSI_PATH" .
+          fi
 
   # ── PUBLISH ─────────────────────────────────────────────────────────
   # publish-release:
