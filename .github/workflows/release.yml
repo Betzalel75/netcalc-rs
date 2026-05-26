@@ -114,99 +114,76 @@ jobs:
   #           app.tar.xz.sha256
 
   # ── macOS ──────────────────────────────────────────────────────────
-  build-macos:
-    name: Build macOS (${{ matrix.target }})
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [aarch64-apple-darwin, x86_64-apple-darwin]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
+  # build-macos:
+  #   name: Build macOS (${{ matrix.target }})
+  #   runs-on: macos-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       target: [aarch64-apple-darwin, x86_64-apple-darwin]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: dtolnay/rust-toolchain@stable
+  #       with:
+  #         targets: ${{ matrix.target }}
 
-      - name: Dépendances Homebrew
-        run: brew install gtk+3 pkg-config libsoup openssl
+  #     - name: Dépendances Homebrew
+  #       run: brew install gtk+3 pkg-config libsoup openssl
 
-      - name: Installer dioxus-cli
-        run: |
-          cargo install cargo-binstall
-          cargo binstall dioxus-cli@0.7.9
+  #     - name: Installer dioxus-cli
+  #       run: |
+  #         cargo install cargo-binstall
+  #         cargo binstall dioxus-cli@0.7.9
 
-      - name: Compiler (dx bundle)
-        run: dx bundle --release --platform desktop --target ${{ matrix.target }}
-      - name: Déboguer les chemins générés
-        run: find target/dx -type d -name "*.app" -o -name "*.dmg"
-      - name: Empaqueter (.tar.xz)
-        run: |
-          VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
-          mkdir -p app
+  #     - name: Compiler (dx bundle)
+  #       run: dx bundle --release --platform desktop --target ${{ matrix.target }}
+      
+  #     - name: Empaqueter (.tar.xz)
+  #       run: |
+  #         VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+  #         mkdir -p app
+  #         cp -r target/dx/netcalc-rs/bundle/macos/macos/* app/
+  #         archive="netcalc-rs-${VERSION}-${{ matrix.target }}.tar.xz"
+  #         tar -cJf $archive app/
+  #         shasum -a 256 $archive > ${archive}.sha256
 
-          # dx bundle sur macOS génère un .app (et potentiellement un .dmg) dans le dossier bundle
-          # On utilise un wildcard plus large au cas où le nommage exact du sous-dossier macos varie
-          cp -r target/dx/netcalc-rs/bundle/macos/* app/
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         name: macos-${{ matrix.target }}
+  #         path: |
+  #           netcalc-rs-*.tar.xz
+  #           netcalc-rs-*.tar.xz.sha256
 
-          archive="netcalc-rs-${VERSION}-${{ matrix.target }}.tar.xz"
-          tar -cJf $archive app/
-          shasum -a 256 $archive > ${archive}.sha256
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos-${{ matrix.target }}
-          path: |
-            netcalc-rs-*.tar.xz
-            netcalc-rs-*.tar.xz.sha256
-
-  # ── WINDOWS ────────────────────────────────────────────────────────
+# ── WINDOWS ────────────────────────────────────────────────────────
   build-windows:
     name: Build Windows
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: MSYS2 + dépendances
-        uses: msys2/setup-msys2@v2
+      # Utilisation de la toolchain MSVC (Native Windows), plus besoin de MSYS2
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          msystem: MINGW64
-          update: true
-          install: >-
-            mingw-w64-x86_64-gtk3
-            mingw-w64-x86_64-pkg-config
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-rust
-            mingw-w64-x86_64-libsoup3
-            zip
+          targets: x86_64-pc-windows-msvc
 
-      - name: Installer dioxus-cli (dans MSYS2)
-        shell: msys2 {0}
+      - name: Installer dioxus-cli
         run: |
-          cargo install cargo-binstall
-          cargo binstall dioxus-cli@0.7.9
+            cargo install cargo-binstall
+            cargo binstall dioxus-cli@0.7.9
 
+      # On compile pour la cible MSVC native
       - name: Compiler (dx bundle)
-        shell: msys2 {0}
-        run: |
-          # Convertit le chemin Windows en chemin Unix pour MSYS2
-          CARGO_BIN="$(cygpath -u "$USERPROFILE")/.cargo/bin"
-          export PATH="$CARGO_BIN:$HOME/.cargo/bin:$PATH"
-          
-          dx bundle --release --platform desktop --target x86_64-pc-windows-gnu
-      
+        run: dx bundle --release --platform desktop --target x86_64-pc-windows-msvc
+
+      # Utilisation de Git Bash (inclus dans le runner Windows) pour vos scripts
       - name: Empaqueter (.zip)
-        shell: msys2 {0}
+        shell: bash
         run: |
-          CARGO_BIN="$(cygpath -u "$USERPROFILE")/.cargo/bin"
-          export PATH="$CARGO_BIN:$HOME/.cargo/bin:$PATH"
-          
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app
           
-          # Attention : comme pour macOS et Linux, si dx bundle place les fichiers 
-          # dans target/dx/netcalc-rs/bundle/windows/ au lieu de release/desktop/
-          # il faudra ajuster les chemins ci-dessous !
-          cp -r target/dx/netcalc-rs/release/desktop/* app/
+          # dx place l'exécutable dans le dossier release/desktop
+          cp target/dx/netcalc-rs/release/desktop/netcalc-rs.exe app/
           
           echo '@echo off
           start "" "%~dp0netcalc-rs.exe"' > launch-netcalc.bat
@@ -214,9 +191,10 @@ jobs:
           archive="netcalc-rs-${VERSION}-x86_64-windows.zip"
           zip -r $archive app/ launch-netcalc.bat
           
-          # Ajustez également ce chemin si l'exécutable est généré ailleurs
-          cp target/dx/netcalc-rs/release/desktop/netcalc-rs.exe netcalc-rs-${VERSION}-x86_64-windows.exe
-          certutil -hashfile netcalc-rs-${VERSION}-x86_64-windows.exe SHA256 > netcalc-rs-${VERSION}-x86_64-windows.exe.sha256
+          cp app/netcalc-rs.exe netcalc-rs-${VERSION}-x86_64-windows.exe
+          
+          # Git Bash sous Windows utilise sha256sum au lieu de certutil
+          sha256sum netcalc-rs-${VERSION}-x86_64-windows.exe > netcalc-rs-${VERSION}-x86_64-windows.exe.sha256
 
       - uses: actions/upload-artifact@v4
         with:
