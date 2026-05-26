@@ -12,106 +12,106 @@ permissions:
 
 jobs:
   # ── LINUX ──────────────────────────────────────────────────────────
-  build-linux:
-    name: Build Linux (${{ matrix.target }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu]
-    steps:
-      - uses: actions/checkout@v4
+  # build-linux:
+  #   name: Build Linux (${{ matrix.target }})
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       target: [x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu]
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Installer la toolchain Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
+  #     - name: Installer la toolchain Rust
+  #       uses: dtolnay/rust-toolchain@stable
+  #       with:
+  #         targets: ${{ matrix.target }}
 
-      - name: Dépendances (x86_64 natif)
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libglib2.0-dev libx11-dev libxdo-dev libjavascriptcoregtk-4.1-dev libsoup-3.0-dev libwebkit2gtk-4.1-dev libssl-dev pkg-config
+  #     - name: Dépendances (x86_64 natif)
+  #       if: matrix.target == 'x86_64-unknown-linux-gnu'
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y libgtk-3-dev libglib2.0-dev libx11-dev libxdo-dev libjavascriptcoregtk-4.1-dev libsoup-3.0-dev libwebkit2gtk-4.1-dev libssl-dev pkg-config
 
-      - name: Dépendances (ARM64 cross)
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: |
-          sudo apt-get update
-          cargo install cross --git https://github.com/cross-rs/cross.git
+  #     - name: Dépendances (ARM64 cross)
+  #       if: matrix.target == 'aarch64-unknown-linux-gnu'
+  #       run: |
+  #         sudo apt-get update
+  #         cargo install cross --git https://github.com/cross-rs/cross.git
 
-      - name: Configurer Cross pour ARM64
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: |
-          cat << 'EOF' > Cross.Dockerfile
-          FROM ubuntu:22.04
-          ENV DEBIAN_FRONTEND=noninteractive
-          RUN apt-get update && apt-get install -y build-essential gcc-aarch64-linux-gnu g++-aarch64-linux-gnu pkg-config curl git ca-certificates
-          RUN dpkg --add-architecture arm64 && \
-              sed -i 's/deb http/deb [arch=amd64] http/g' /etc/apt/sources.list && \
-              echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted universe multiverse" >> /etc/apt/sources.list && \
-              echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
-              echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted universe multiverse" >> /etc/apt/sources.list && \
-              apt-get update && \
-              apt-get install -y --no-install-recommends \
-                libglib2.0-dev:arm64 \
-                libgtk-3-dev:arm64 \
-                libx11-dev:arm64 \
-                libxdo-dev:arm64 \
-                libjavascriptcoregtk-4.1-dev:arm64 \
-                libsoup-3.0-dev:arm64 \
-                libwebkit2gtk-4.1-dev:arm64 \
-                libssl-dev:arm64
-          ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc \
-              AR_aarch64_unknown_linux_gnu=aarch64-linux-gnu-ar \
-              CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc \
-              CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++ \
-              PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig/ \
-              PKG_CONFIG_ALLOW_CROSS=1
-          EOF
-          cat << 'EOF' > Cross.toml
-          [target.aarch64-unknown-linux-gnu]
-          dockerfile = "Cross.Dockerfile"
-          EOF
+  #     - name: Configurer Cross pour ARM64
+  #       if: matrix.target == 'aarch64-unknown-linux-gnu'
+  #       run: |
+  #         cat << 'EOF' > Cross.Dockerfile
+  #         FROM ubuntu:22.04
+  #         ENV DEBIAN_FRONTEND=noninteractive
+  #         RUN apt-get update && apt-get install -y build-essential gcc-aarch64-linux-gnu g++-aarch64-linux-gnu pkg-config curl git ca-certificates
+  #         RUN dpkg --add-architecture arm64 && \
+  #             sed -i 's/deb http/deb [arch=amd64] http/g' /etc/apt/sources.list && \
+  #             echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted universe multiverse" >> /etc/apt/sources.list && \
+  #             echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted universe multiverse" >> /etc/apt/sources.list && \
+  #             echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted universe multiverse" >> /etc/apt/sources.list && \
+  #             apt-get update && \
+  #             apt-get install -y --no-install-recommends \
+  #               libglib2.0-dev:arm64 \
+  #               libgtk-3-dev:arm64 \
+  #               libx11-dev:arm64 \
+  #               libxdo-dev:arm64 \
+  #               libjavascriptcoregtk-4.1-dev:arm64 \
+  #               libsoup-3.0-dev:arm64 \
+  #               libwebkit2gtk-4.1-dev:arm64 \
+  #               libssl-dev:arm64
+  #         ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc \
+  #             AR_aarch64_unknown_linux_gnu=aarch64-linux-gnu-ar \
+  #             CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc \
+  #             CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++ \
+  #             PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig/ \
+  #             PKG_CONFIG_ALLOW_CROSS=1
+  #         EOF
+  #         cat << 'EOF' > Cross.toml
+  #         [target.aarch64-unknown-linux-gnu]
+  #         dockerfile = "Cross.Dockerfile"
+  #         EOF
 
-      - name: Installer dioxus-cli (builds natifs uniquement)
-        if: matrix.target != 'aarch64-unknown-linux-gnu'
-        run: |
-          cargo install cargo-binstall
-          cargo binstall dioxus-cli@0.7.9
+  #     - name: Installer dioxus-cli (builds natifs uniquement)
+  #       if: matrix.target != 'aarch64-unknown-linux-gnu'
+  #       run: |
+  #         cargo install cargo-binstall
+  #         cargo binstall dioxus-cli@0.7.9
 
-      - name: Compiler (build natif x86_64)
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
-        run: dx bundle --release --platform desktop
+  #     - name: Compiler (build natif x86_64)
+  #       if: matrix.target == 'x86_64-unknown-linux-gnu'
+  #       run: dx bundle --release --platform desktop
 
-      - name: Compiler (cross ARM64)
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: cross build --release --target aarch64-unknown-linux-gnu
+  #     - name: Compiler (cross ARM64)
+  #       if: matrix.target == 'aarch64-unknown-linux-gnu'
+  #       run: cross build --release --target aarch64-unknown-linux-gnu
 
-      - name: Empaqueter (.tar.xz)
-        run: |
-          VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
-          mkdir -p app/debian
-          if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
-            cp target/dx/netcalc-rs/bundle/linux/appimage/*.AppImage app/
-          else
-            cp target/${{ matrix.target }}/release/netcalc-rs app/
-            cp -r assets app/
-          fi
-          cp debian/netcalc-rs.desktop app/debian/
-          archive="netcalc-rs-${VERSION}-${{ matrix.target }}.tar.xz"
-          tar -cJf $archive app/
-          sha256sum $archive > ${archive}.sha256
-          cp $archive app.tar.xz
-          cp ${archive}.sha256 app.tar.xz.sha256
+  #     - name: Empaqueter (.tar.xz)
+  #       run: |
+  #         VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+  #         mkdir -p app/debian
+  #         if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
+  #           cp target/dx/netcalc-rs/bundle/linux/appimage/*.AppImage app/
+  #         else
+  #           cp target/${{ matrix.target }}/release/netcalc-rs app/
+  #           cp -r assets app/
+  #         fi
+  #         cp debian/netcalc-rs.desktop app/debian/
+  #         archive="netcalc-rs-${VERSION}-${{ matrix.target }}.tar.xz"
+  #         tar -cJf $archive app/
+  #         sha256sum $archive > ${archive}.sha256
+  #         cp $archive app.tar.xz
+  #         cp ${archive}.sha256 app.tar.xz.sha256
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: linux-${{ matrix.target }}
-          path: |
-            netcalc-rs-*.tar.xz
-            netcalc-rs-*.tar.xz.sha256
-            app.tar.xz
-            app.tar.xz.sha256
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         name: linux-${{ matrix.target }}
+  #         path: |
+  #           netcalc-rs-*.tar.xz
+  #           netcalc-rs-*.tar.xz.sha256
+  #           app.tar.xz
+  #           app.tar.xz.sha256
 
   # ── macOS ──────────────────────────────────────────────────────────
   build-macos:
@@ -137,12 +137,17 @@ jobs:
 
       - name: Compiler (dx bundle)
         run: dx bundle --release --platform desktop --target ${{ matrix.target }}
-
+      - name: Déboguer les chemins générés
+        run: find target/dx -type d -name "*.app" -o -name "*.dmg"
       - name: Empaqueter (.tar.xz)
         run: |
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app
-          cp -r target/dx/netcalc-rs/release/desktop/* app/
+
+          # dx bundle sur macOS génère un .app (et potentiellement un .dmg) dans le dossier bundle
+          # On utilise un wildcard plus large au cas où le nommage exact du sous-dossier macos varie
+          cp -r target/dx/netcalc-rs/bundle/macos/* app/
+
           archive="netcalc-rs-${VERSION}-${{ matrix.target }}.tar.xz"
           tar -cJf $archive app/
           shasum -a 256 $archive > ${archive}.sha256
@@ -183,24 +188,36 @@ jobs:
       - name: Compiler (dx bundle)
         shell: msys2 {0}
         run: |
-          export PATH="$USERPROFILE/.cargo/bin:$HOME/.cargo/bin:$PATH"
+          # Convertit le chemin Windows en chemin Unix pour MSYS2
+          CARGO_BIN="$(cygpath -u "$USERPROFILE")/.cargo/bin"
+          export PATH="$CARGO_BIN:$HOME/.cargo/bin:$PATH"
+          
           dx bundle --release --platform desktop --target x86_64-pc-windows-gnu
-
+      
       - name: Empaqueter (.zip)
         shell: msys2 {0}
         run: |
-          export PATH="$USERPROFILE/.cargo/bin:$HOME/.cargo/bin:$PATH"
+          CARGO_BIN="$(cygpath -u "$USERPROFILE")/.cargo/bin"
+          export PATH="$CARGO_BIN:$HOME/.cargo/bin:$PATH"
+          
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app
-          # Assurez-vous que le chemin est correct selon ce que dx bundle génère sous Windows.
-          # S'il génère un installeur msi ou un exe à un endroit différent, ajustez ce chemin.
+          
+          # Attention : comme pour macOS et Linux, si dx bundle place les fichiers 
+          # dans target/dx/netcalc-rs/bundle/windows/ au lieu de release/desktop/
+          # il faudra ajuster les chemins ci-dessous !
           cp -r target/dx/netcalc-rs/release/desktop/* app/
+          
           echo '@echo off
           start "" "%~dp0netcalc-rs.exe"' > launch-netcalc.bat
+          
           archive="netcalc-rs-${VERSION}-x86_64-windows.zip"
           zip -r $archive app/ launch-netcalc.bat
+          
+          # Ajustez également ce chemin si l'exécutable est généré ailleurs
           cp target/dx/netcalc-rs/release/desktop/netcalc-rs.exe netcalc-rs-${VERSION}-x86_64-windows.exe
           certutil -hashfile netcalc-rs-${VERSION}-x86_64-windows.exe SHA256 > netcalc-rs-${VERSION}-x86_64-windows.exe.sha256
+
       - uses: actions/upload-artifact@v4
         with:
           name: windows-x86_64
