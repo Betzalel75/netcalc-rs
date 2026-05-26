@@ -59,7 +59,8 @@ jobs:
                 libxdo-dev:arm64 \
                 libjavascriptcoregtk-4.1-dev:arm64 \
                 libsoup-3.0-dev:arm64 \
-                libwebkit2gtk-4.1-dev:arm64
+                libwebkit2gtk-4.1-dev:arm64 \
+                libssl-dev:arm64
           ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc \
               AR_aarch64_unknown_linux_gnu=aarch64-linux-gnu-ar \
               CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc \
@@ -75,8 +76,8 @@ jobs:
       - name: Installer dioxus-cli (builds natifs uniquement)
         if: matrix.target != 'aarch64-unknown-linux-gnu'
         run: |
-            cargo install cargo-binstall
-            cargo binstall dioxus-cli@0.7.9
+          cargo install cargo-binstall
+          cargo binstall dioxus-cli@0.7.9
 
       - name: Compiler (build natif x86_64)
         if: matrix.target == 'x86_64-unknown-linux-gnu'
@@ -91,8 +92,7 @@ jobs:
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app/debian
           if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
-            # dx bundle a tout mis dans target/dx/netcalc-rs/release/desktop/
-            cp -r target/dx/netcalc-rs/release/desktop/* app/
+            cp target/dx/netcalc-rs/bundle/linux/appimage/*.AppImage app/
           else
             cp target/${{ matrix.target }}/release/netcalc-rs app/
             cp -r assets app/
@@ -128,12 +128,12 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Dépendances Homebrew
-        run: brew install gtk+3 pkg-config libsoup libssl-dev
+        run: brew install gtk+3 pkg-config libsoup openssl
 
       - name: Installer dioxus-cli
         run: |
-            cargo install cargo-binstall
-            cargo binstall dioxus-cli@0.7.9
+          cargo install cargo-binstall
+          cargo binstall dioxus-cli@0.7.9
 
       - name: Compiler (dx bundle)
         run: dx bundle --release --platform desktop --target ${{ matrix.target }}
@@ -177,18 +177,23 @@ jobs:
       - name: Installer dioxus-cli (dans MSYS2)
         shell: msys2 {0}
         run: |
-            cargo install cargo-binstall
-            cargo binstall dioxus-cli@0.7.9
+          cargo install cargo-binstall
+          cargo binstall dioxus-cli@0.7.9
 
       - name: Compiler (dx bundle)
         shell: msys2 {0}
-        run: dx bundle --release --platform desktop --target x86_64-pc-windows-gnu
+        run: |
+          export PATH="$USERPROFILE/.cargo/bin:$HOME/.cargo/bin:$PATH"
+          dx bundle --release --platform desktop --target x86_64-pc-windows-gnu
 
       - name: Empaqueter (.zip)
         shell: msys2 {0}
         run: |
+          export PATH="$USERPROFILE/.cargo/bin:$HOME/.cargo/bin:$PATH"
           VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
           mkdir -p app
+          # Assurez-vous que le chemin est correct selon ce que dx bundle génère sous Windows.
+          # S'il génère un installeur msi ou un exe à un endroit différent, ajustez ce chemin.
           cp -r target/dx/netcalc-rs/release/desktop/* app/
           echo '@echo off
           start "" "%~dp0netcalc-rs.exe"' > launch-netcalc.bat
@@ -196,7 +201,6 @@ jobs:
           zip -r $archive app/ launch-netcalc.bat
           cp target/dx/netcalc-rs/release/desktop/netcalc-rs.exe netcalc-rs-${VERSION}-x86_64-windows.exe
           certutil -hashfile netcalc-rs-${VERSION}-x86_64-windows.exe SHA256 > netcalc-rs-${VERSION}-x86_64-windows.exe.sha256
-
       - uses: actions/upload-artifact@v4
         with:
           name: windows-x86_64
