@@ -8,7 +8,6 @@ TMP_DIR="$HOME/.tmp/netcalc-rs-install"
 INSTALL_DIR="$HOME/.local/netcalc-rs.app"
 BIN_DIR="$HOME/.local/bin"
 
-# Détection de l'OS et de l'architecture
 OS="$(uname -s)"
 ARCH="$(uname -m)"
 case "$OS" in
@@ -21,7 +20,6 @@ case "$OS" in
     ;;
 esac
 
-# Mapper l'architecture vers le suffixe des releases
 case "$ARCH" in
   x86_64|amd64)  ARCH_SUFFIX="x86_64" ;;
   aarch64|arm64) ARCH_SUFFIX="aarch64" ;;
@@ -33,7 +31,6 @@ esac
 
 echo "[*] Système détecté : $OS / $ARCH"
 
-# ── Dépendances système ──────────────────────────────────────────────
 echo "[*] Vérification des dépendances"
 command -v curl >/dev/null 2>&1 || { echo "[-] curl est requis."; exit 1; }
 command -v tar  >/dev/null 2>&1 || { echo "[-] tar est requis."; exit 1; }
@@ -47,12 +44,10 @@ if [ "$OS" = "linux" ]; then
   fi
 fi
 
-# ── Téléchargement ───────────────────────────────────────────────────
 echo "[*] Téléchargement de NetCalc-rs ($VERSION)"
 mkdir -p "$TMP_DIR"
 cd "$TMP_DIR"
 
-# Construction de l'URL de téléchargement
 if [ "$OS" = "macos" ]; then
   TARGET="$ARCH_SUFFIX-apple-darwin"
 else
@@ -81,50 +76,74 @@ fi
 echo "[-] Téléchargement : $RELEASE_URL"
 curl -sL -o archive.tar.xz "$RELEASE_URL"
 
-# ── Extraction ───────────────────────────────────────────────────────
 echo "[-] Extraction..."
 tar -Jxf archive.tar.xz
 cd app/
 
-# ── Installation ─────────────────────────────────────────────────────
-echo "[-] Installation dans $INSTALL_DIR"
-mkdir -p "$INSTALL_DIR"
-cp netcalc-rs* "$INSTALL_DIR/" 2>/dev/null || cp -r . "$INSTALL_DIR/"
-
 mkdir -p "$BIN_DIR"
-ln -sf "$INSTALL_DIR/netcalc-rs" "$BIN_DIR/netcalc-rs"
-echo "[✔] Binaire installé : $BIN_DIR/netcalc-rs"
 
-# ── Intégration au système ───────────────────────────────────────────
+if [ "$OS" = "linux" ]; then
+  echo "[-] Installation sous Linux..."
+  mkdir -p "$INSTALL_DIR"
+  
+  APPIMAGE=$(find . -maxdepth 1 -name "*.AppImage" | head -1)
+  
+  if [ -n "$APPIMAGE" ]; then
+    echo "[-] AppImage détecté ($ARCH_SUFFIX)"
+    cp "$APPIMAGE" "$INSTALL_DIR/netcalc-rs.AppImage"
+    chmod +x "$INSTALL_DIR/netcalc-rs.AppImage"
+    ln -sf "$INSTALL_DIR/netcalc-rs.AppImage" "$BIN_DIR/netcalc-rs"
+  else
+    echo "[-] Binaire natif détecté ($ARCH_SUFFIX)"
+    cp -r ./* "$INSTALL_DIR/" 2>/dev/null || true
+    chmod +x "$INSTALL_DIR/netcalc-rs"
+    ln -sf "$INSTALL_DIR/netcalc-rs" "$BIN_DIR/netcalc-rs"
+  fi
+  echo "[✔] Binaire lié dans : $BIN_DIR/netcalc-rs"
+
+elif [ "$OS" = "macos" ]; then
+  echo "[-] Installation sous macOS..."
+  MAC_APP_DIR="$HOME/Applications"
+  mkdir -p "$MAC_APP_DIR"
+  
+  APP_BUNDLE=$(find . -maxdepth 1 -type d -name "*.app" | head -1)
+  
+  if [ -n "$APP_BUNDLE" ]; then
+    BUNDLE_NAME=$(basename "$APP_BUNDLE")
+    echo "[-] Bundle macOS détecté : $BUNDLE_NAME"
+    
+    rm -rf "${MAC_APP_DIR:?}/${BUNDLE_NAME:?}"
+    cp -R "$APP_BUNDLE" "$MAC_APP_DIR/"
+    
+    ln -sf "$MAC_APP_DIR/$BUNDLE_NAME/Contents/MacOS/netcalc-rs" "$BIN_DIR/netcalc-rs"
+    echo "[✔] Application installée dans : $MAC_APP_DIR/$BUNDLE_NAME"
+  else
+    echo "[-] Erreur: Bundle .app introuvable pour macOS."
+    exit 1
+  fi
+fi
+
 if [ "$OS" = "linux" ]; then
   DESKTOP_DIR="$HOME/.local/share/applications"
   ICON_DIR="$HOME/.local/share/icons"
   mkdir -p "$DESKTOP_DIR" "$ICON_DIR"
+  
   if [ -f debian/netcalc-rs.desktop ]; then
+    sed -i "s|^Exec=.*|Exec=$BIN_DIR/netcalc-rs|" debian/netcalc-rs.desktop
     install -Dm 644 debian/netcalc-rs.desktop "$DESKTOP_DIR/netcalc-rs.desktop"
     echo "[✔] Entrée de menu ajoutée"
   fi
+  
   if [ -f assets/images/netcalc-rs.png ]; then
     install -Dm 644 assets/images/netcalc-rs.png "$ICON_DIR/netcalc-rs.png"
     echo "[✔] Icône ajoutée"
   fi
-elif [ "$OS" = "macos" ]; then
-  # Sur macOS, optionnel : copier l'icône
-  if [ -f assets/images/netcalc-rs.png ]; then
-    mkdir -p "$INSTALL_DIR"
-    cp assets/images/netcalc-rs.png "$INSTALL_DIR/icon.png"
-  fi
-  echo "[✔] NetCalc-rs prêt pour macOS"
-  echo "    Astuce : créez un alias dans /Applications avec :"
-  echo "    ln -sf $BIN_DIR/netcalc-rs /Applications/NetCalc-rs"
 fi
 
-# ── Nettoyage ────────────────────────────────────────────────────────
 cd "$HOME"
 rm -rf "$TMP_DIR"
 echo "[✔] Installation terminée !"
 
-# ── Instructions PATH ────────────────────────────────────────────────
 echo ""
 echo "[!] Assurez-vous que ~/.local/bin est dans votre PATH :"
 case "$SHELL" in
