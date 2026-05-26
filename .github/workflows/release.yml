@@ -2,8 +2,6 @@ name: Release Multi-plateforme
 
 on:
   push:
-    branches:
-      - main
     tags:
       - "v*"
 
@@ -74,10 +72,13 @@ jobs:
           EOF
 
       - name: Installer dioxus-cli (builds natifs uniquement)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: matrix.target != 'aarch64-unknown-linux-gnu'
         run: |
           cargo install cargo-binstall
-          cargo binstall dioxus-cli@0.7.9
+          echo "::group::Installing dioxus-cli"
+          cargo binstall -y --locked dioxus-cli@0.7.9
 
       - name: Compiler (build natif x86_64)
         if: matrix.target == 'x86_64-unknown-linux-gnu'
@@ -131,9 +132,11 @@ jobs:
         run: brew install gtk+3 pkg-config libsoup openssl
 
       - name: Installer dioxus-cli
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cargo install cargo-binstall
-          cargo binstall dioxus-cli@0.7.9
+          cargo binstall -y --locked dioxus-cli@0.7.9
 
       - name: Compiler (dx bundle)
         run: dx bundle --release --platform desktop --target ${{ matrix.target }}
@@ -166,9 +169,11 @@ jobs:
           targets: x86_64-pc-windows-msvc
 
       - name: Installer dioxus-cli
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-            cargo install cargo-binstall
-            cargo binstall dioxus-cli@0.7.9
+          cargo install cargo-binstall
+          cargo binstall -y --locked dioxus-cli@0.7.9
 
       - name: Compiler (dx bundle)
         run: dx bundle --release --platform desktop --target x86_64-pc-windows-msvc
