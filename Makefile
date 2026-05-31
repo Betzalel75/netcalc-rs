@@ -23,6 +23,12 @@ release-local: build
 	@echo "[✔] _build/$(archive)"
 	@echo "[✔] _build/$(archive).sha256"
 
+appimage-install: build
+	@bash scripts/local_install.sh \
+	target/dx/$(NAME)/bundle/$(UNAME_S)/appimage/$(NAME)_$(VERSION)_$(UNAME_M).AppImage \
+	debian/$(NAME).desktop \
+	assets/images/$(NAME).png
+
 run-dev:
 	cargo run
 
@@ -34,6 +40,7 @@ help:
 	@echo "------          -----------"
 	@echo "build           Compilation release (cargo build --release)"
 	@echo "release-local   Build + archive .tar.xz dans _build/"
+	@echo "appimage-install Install l'AppImage localement sur le système"
 	@echo "run-dev         Lancement en mode développement"
 	@echo "clean           Nettoyage"
 	@echo ""
@@ -41,4 +48,4 @@ help:
 	@echo "  git tag v1.1.0 && git push origin --tags"
 	@echo "  → GitHub Actions construit toutes les cibles"
 
-.PHONY: clean build release-local run-dev help
+.PHONY: clean build release-local appimage-install run-dev help
